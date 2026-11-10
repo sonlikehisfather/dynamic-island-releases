@@ -376,3 +376,6 @@ footer { padding: 60px 0 40px; border-top: 1px solid var(--line); overflow: hidd
 /* Palette sobre : les pochettes et halos de démonstration sont désaturés */
 .art { filter: saturate(.4); } .halo { filter: blur(22px) saturate(.35); } .aurora i { opacity: .35; }
 .dk-hud, .dk-xh { filter: saturate(.25); }
+
+/* Aucun débordement horizontal possible (bandeau défilant, halos) */
+html, body { overflow-x: clip; max-width: 100%; }
