@@ -4,118 +4,256 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Dynamic Island pour Windows</title>
-  <meta name="description" content="Une Dynamic Island pour ton PC Windows : musique, paroles, stats de jeu en direct, overlay FPS, réticule, instant replay et assistant IA.">
-  <meta name="theme-color" content="#0b0b0d">
+  <meta name="description" content="Une vraie Dynamic Island pour ton PC Windows : musique, paroles, stats, overlay FPS, réticule, instant replay et assistant IA, dans une île animée tout en haut de ton écran.">
+  <meta name="theme-color" content="#040406">
   <meta property="og:title" content="Dynamic Island pour Windows">
-  <meta property="og:description" content="Musique, stats de jeu, overlay FPS, réticule, assistant IA… dans une île animée tout en haut de ton écran.">
+  <meta property="og:description" content="Ton PC a enfin son île : musique, stats, FPS, réticule, replay et IA.">
   <meta property="og:type" content="website">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23161618'/%3E%3Crect x='14' y='14' width='36' height='13' rx='6.5' fill='%23fff'/%3E%3Crect x='16' y='36' width='7' height='14' rx='3.5' fill='%2330d158'/%3E%3Crect x='26' y='30' width='7' height='20' rx='3.5' fill='%230a84ff'/%3E%3Crect x='36' y='34' width='7' height='16' rx='3.5' fill='%23bf5af2'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
 
-<nav>
-  <div class="wrap">
-    <a class="brand" href="#top"><i></i> Dynamic Island</a>
+<div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+<div class="grain" aria-hidden="true"></div>
+
+<!-- ═════ L'île de navigation : elle suit la section et s'ouvre au survol ═════ -->
+<header class="isle" id="isle">
+  <button class="isle-rest" id="isleBtn" aria-expanded="false" aria-controls="isleMenu" aria-label="Ouvrir le menu">
+    <span class="dot"></span><span class="lbl" id="isleLbl">Dynamic Island</span>
+    <span class="mini-eq"><i></i><i></i><i></i><i></i></span>
+  </button>
+  <nav class="isle-menu" id="isleMenu" aria-label="Navigation">
     <ul>
-      <li><a href="#fonctions">Fonctionnalités</a></li>
-      <li><a href="#captures">Captures</a></li>
+      <li><a href="#essaie">Essaie-la</a></li>
+      <li><a href="#apercu">Aperçu</a></li>
       <li><a href="#installer">Installer</a></li>
       <li><a href="#faq">Questions</a></li>
     </ul>
-    <a class="btn" style="padding:9px 18px;font-size:14px" href="https://github.com/sonlikehisfather/dynamic-island-releases/releases/latest/download/DynamicIsland-win-Setup.exe">Télécharger</a>
-  </div>
-</nav>
-
-<header class="hero" id="top">
-  <div class="wrap">
-    <div class="island" aria-hidden="true">
-      <div class="art"></div>
-      <div class="t"><b>Titre du morceau</b><span>Nom de l'artiste</span></div>
-      <div class="eq"><i></i><i></i><i></i><i></i></div>
-    </div>
-    <h1>Ton PC a enfin sa <span>Dynamic Island</span></h1>
-    <p class="lead">Musique, paroles, stats de jeu, overlay FPS, réticule, instant replay et assistant IA, dans une île animée posée en haut de ton écran.</p>
-    <div class="cta">
-      <a class="btn" href="https://github.com/sonlikehisfather/dynamic-island-releases/releases/latest/download/DynamicIsland-win-Setup.exe">⬇ Télécharger pour Windows</a>
-      <a class="btn ghost" href="#fonctions">Découvrir</a>
-    </div>
-    <small>Windows 10 / 11 · environ 32 Mo · mises à jour automatiques · licence nécessaire</small>
-  </div>
+    <div class="go"><a class="btn sm" href="https://github.com/sonlikehisfather/dynamic-island-releases/releases/latest/download/DynamicIsland-win-Setup.exe">Télécharger pour Windows</a></div>
+  </nav>
 </header>
 
-<section id="fonctions">
+<main>
+<!-- ═════ Héros ═════ -->
+<section class="hero" id="top" data-label="Dynamic Island" style="padding-bottom:40px">
   <div class="wrap">
-    <h2>Tout dans une seule île</h2>
-    <p class="sub">Elle reste discrète, s'ouvre quand tu en as besoin, et se cache toute seule pendant tes jeux si tu le veux.</p>
-    <div class="grid">
-      <div class="card"><div class="ic" style="background:rgba(191,90,242,.16)">🎵</div><h3>Musique & paroles</h3><p>Pochette, contrôles, couleurs du morceau et paroles synchronisées. Un halo s'allume à chaque changement de titre.</p></div>
-      <div class="card"><div class="ic" style="background:rgba(48,209,88,.16)">📊</div><h3>Stats du PC en direct</h3><p>Processeur, carte graphique, mémoire, températures et ping, au survol de l'île.</p></div>
-      <div class="card"><div class="ic" style="background:rgba(100,210,255,.16)">⚡</div><h3>Overlay FPS</h3><p>Un compteur de FPS dans un coin de l'écran, sans rien injecter dans le jeu : compatible avec les anti-triche.</p></div>
-      <div class="card"><div class="ic" style="background:rgba(255,55,95,.16)">✚</div><h3>Réticule perso</h3><p>Un viseur au centre de l'écran : formes, couleurs, image perso, et un profil différent par jeu.</p></div>
-      <div class="card"><div class="ic" style="background:rgba(255,159,10,.16)">🎬</div><h3>Instant replay</h3><p>Garde les dernières secondes de ta partie en mémoire et sauvegarde le moment fort d'un raccourci.</p></div>
-      <div class="card"><div class="ic" style="background:rgba(48,209,88,.16)">🤖</div><h3>Assistant IA</h3><p>Pose une question à Claude, ChatGPT, Gemini ou d'autres, avec tes propres clés. L'île connaît ton média et ton PC.</p></div>
-      <div class="card"><div class="ic" style="background:rgba(100,210,255,.16)">🏆</div><h3>Sessions & bilan de la semaine</h3><p>FPS, températures et saccades de chaque partie, et un bilan à partager en image.</p></div>
-      <div class="card"><div class="ic" style="background:rgba(191,90,242,.16)">🔔</div><h3>Notifications & outils</h3><p>Notifications Windows, presse-papiers, minuteur, mixeur de volume, indicateur micro et webcam.</p></div>
+    <span class="eyebrow rv"><b></b> Nouveau · version 1.7 · Windows 10 &amp; 11</span>
+    <h1 class="rv d1">Ton PC<br>a enfin <span class="shine">son île.</span></h1>
+    <p class="lead rv d2">Musique, stats, FPS, réticule, replay, IA… tout vit dans une île animée posée en haut de ton écran. Elle s'ouvre quand tu en as besoin, et disparaît quand tu joues.</p>
+
+    <div class="stage rv d3" aria-label="Démonstration interactive de l'île">
+      <div class="bigisle" id="big">
+        <div class="halo" id="halo"></div><div class="ring"></div>
+        <div class="v v-music" data-s="0">
+          <div class="art" style="--a1:#bf5af2;--a2:#ff375f;--a3:#ff9f0a"></div>
+          <div class="tx"><b>Minuit Ardent</b><span>Nova</span></div>
+          <div class="eqb"><i></i><i></i><i></i><i></i></div>
+        </div>
+        <div class="v v-player" data-s="1">
+          <div class="top"><div class="art" style="--a1:#0a84ff;--a2:#64d2ff;--a3:#30d158"></div>
+            <div class="tx"><b>Cascade</b><span>Lumen</span></div><div class="eqb"><i></i><i></i><i></i><i></i></div></div>
+          <div class="prog"><span>1:12</span><div class="bar"><i></i></div><span>-2:04</span></div>
+          <div class="ctl">
+            <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zM9.5 12 18 6v12z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 6l8.5 6L6 18z"/></svg>
+          </div>
+        </div>
+        <div class="v v-stats" data-s="2">
+          <div class="st"><small>CPU</small><b id="hCpu">36 %</b><div class="bar"><i id="hCpuB" style="width:36%;background:var(--orange)"></i></div></div>
+          <div class="st"><small>GPU</small><b id="hGpu">71 %</b><div class="bar"><i id="hGpuB" style="width:71%;background:var(--green)"></i></div></div>
+          <div class="st"><small>RAM</small><b id="hRam">48 %</b><div class="bar"><i id="hRamB" style="width:48%;background:var(--cyan)"></i></div></div>
+          <div class="st"><small>PING</small><b id="hPing">12 ms</b><div class="bar"><i style="width:22%;background:var(--violet)"></i></div></div>
+        </div>
+        <div class="v v-notif" data-s="3">
+          <div class="chipic" style="background:rgba(100,210,255,.18);color:var(--cyan)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22a2.4 2.4 0 0 0 2.4-2.4h-4.8A2.4 2.4 0 0 0 12 22zm7-6.6V11a7 7 0 0 0-5.2-6.8V3.5a1.8 1.8 0 0 0-3.6 0v.7A7 7 0 0 0 5 11v4.4L3.5 17v1h17v-1z"/></svg></div>
+          <div class="tx"><b>Nouveau message</b><span>« On joue ce soir ? »</span></div>
+        </div>
+        <div class="v v-replay" data-s="4">
+          <div class="chipic" style="background:rgba(48,209,88,.2);color:var(--green)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></div>
+          <div class="tx"><b>Clip sauvegardé</b><span>Les 30 dernières secondes</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="states rv d3" id="states" role="tablist" aria-label="États de l'île">
+      <button class="on" data-i="0">🎵 Musique</button><button data-i="1">▶ Lecteur</button><button data-i="2">📊 Stats</button><button data-i="3">🔔 Notification</button><button data-i="4">🎬 Replay</button>
+    </div>
+    <div class="cta rv d3">
+      <a class="btn" href="https://github.com/sonlikehisfather/dynamic-island-releases/releases/latest/download/DynamicIsland-win-Setup.exe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 5-5m-5 5-5-5M5 20h14"/></svg>Télécharger</a>
+      <a class="btn ghost" href="#essaie">Essaie-la ici ↓</a>
+    </div>
+    <p class="fine rv d3">32 Mo · mises à jour automatiques · licence nécessaire</p>
+  </div>
+</section>
+
+<div class="ticker" aria-hidden="true"><div>
+  <span>MUSIQUE</span><span>PAROLES</span><span>STATS</span><span>OVERLAY FPS</span><span>RÉTICULE</span><span>INSTANT REPLAY</span><span>ASSISTANT IA</span><span>BILAN</span><span>THÈMES</span>
+  <span>MUSIQUE</span><span>PAROLES</span><span>STATS</span><span>OVERLAY FPS</span><span>RÉTICULE</span><span>INSTANT REPLAY</span><span>ASSISTANT IA</span><span>BILAN</span><span>THÈMES</span>
+</div></div>
+
+<!-- ═════ Essaie-la : de vraies démos à manipuler ═════ -->
+<section id="essaie" data-label="Essaie-la">
+  <div class="wrap">
+    <p class="kicker rv">À toi de jouer</p>
+    <h2 class="rv d1">Tout s'essaie <span class="shine">ici.</span></h2>
+    <p class="sub rv d2">Pas de vidéo : de vraies démos. Bouge la souris, clique, change les couleurs.</p>
+
+    <div class="bento">
+      <!-- Halo -->
+      <article class="card c-halo rv">
+        <span class="tag">Musique</span><h3>Un halo à chaque morceau</h3>
+        <p class="d">Quand la musique change, l'île s'illumine aux couleurs de la pochette.</p>
+        <div class="mini-stage"><div class="mini" id="mini" style="--c1:#bf5af2;--c2:#ff375f">
+          <div class="art" id="miniArt" style="--a1:#bf5af2;--a2:#ff375f;--a3:#ff9f0a"></div>
+          <div class="tx"><b id="miniT">Minuit Ardent</b><span id="miniA">Nova</span></div>
+          <div class="eqb" style="margin-left:auto"><i></i><i></i><i></i><i></i></div></div></div>
+        <button class="btn ghost sm demo-btn" id="next">⏭ Changer de morceau</button>
+      </article>
+
+      <!-- Réticule -->
+      <article class="card c-xh rv d1">
+        <span class="tag">Réticule</span><h3>Un viseur à ton style, par jeu</h3>
+        <p class="d">Passe la souris dans la scène : le réticule te suit. Ctrl&nbsp;+&nbsp;Maj&nbsp;+&nbsp;X l'affiche ou le cache dans l'appli.</p>
+        <div class="scene" id="scene"><div class="tgt"></div><svg class="xh" id="xh" aria-hidden="true"></svg><span class="hint">Bouge la souris ici</span></div>
+        <div class="ctrls">
+          <div class="row"><span class="lbl2">Forme</span>
+            <button class="pill on" data-st="Croix + point">Croix + point</button><button class="pill" data-st="Croix">Croix</button><button class="pill" data-st="Point">Point</button><button class="pill" data-st="Cercle">Cercle</button><button class="pill" data-st="Cercle + point">Cercle + point</button><button class="pill" data-st="T">T</button></div>
+          <div class="row"><span class="lbl2">Couleur</span><span id="xSw" class="row"></span></div>
+          <div class="row"><span class="lbl2">Taille</span><input type="range" id="xSize" min="18" max="80" value="46" aria-label="Taille"></div>
+          <div class="row"><span class="lbl2">Profil</span>
+            <button class="pill" data-pf="0">Tir tactique</button><button class="pill" data-pf="1">Course</button><button class="pill" data-pf="2">Battle royale</button></div>
+        </div>
+      </article>
+
+      <!-- FPS -->
+      <article class="card c-fps rv d1">
+        <span class="tag">Overlay</span><span class="badge-ex">EXEMPLE ANIMÉ</span><h3>Tes FPS en jeu</h3>
+        <div class="fps-big"><b id="fps">238</b><span>FPS</span></div>
+        <div class="fps-rows"><span>Temps d'image <b id="ft">4,2 ms</b></span><span>1 % low <b id="low">187</b></span><span>GPU <b id="gpuT">64 °C</b></span><span>Ping <b id="pg">12 ms</b></span></div>
+        <canvas class="spark" id="spark" width="400" height="64"></canvas>
+        <p class="d">Une simple fenêtre par-dessus le jeu. Rien n'est injecté.</p>
+      </article>
+
+      <!-- Stats -->
+      <article class="card c-stats rv d2">
+        <span class="tag">Stats</span><h3>Ton PC d'un survol</h3>
+        <div class="bars" id="bars">
+          <div class="br"><span>CPU</span><div class="t"><i style="width:34%;background:var(--orange)"></i></div><b>34 %</b></div>
+          <div class="br"><span>GPU</span><div class="t"><i style="width:71%;background:var(--green)"></i></div><b>71 %</b></div>
+          <div class="br"><span>RAM</span><div class="t"><i style="width:48%;background:var(--cyan)"></i></div><b>48 %</b></div>
+          <div class="br"><span>Ping</span><div class="t"><i style="width:18%;background:var(--violet)"></i></div><b>12 ms</b></div>
+        </div>
+        <p class="d" style="margin-top:16px">Processeur, carte graphique, mémoire, températures et ping.</p>
+      </article>
+
+      <!-- Replay -->
+      <article class="card c-replay rv d1">
+        <span class="tag">Instant replay</span><h3>Le moment fort, sauvé</h3>
+        <p class="d">L'île garde les dernières secondes en mémoire. Un raccourci et c'est enregistré.</p>
+        <div class="toast" id="toast"><i>✓</i>Clip sauvegardé · 30 dernières secondes</div>
+        <div class="tl"><div class="hd"><span><b>●</b> Replay en cours</span><span>60 s</span></div>
+          <div class="track" id="track"><div class="sv"></div><div class="play"></div></div></div>
+        <button class="btn ghost sm demo-btn" id="save">🎬 Sauvegarder le clip</button>
+      </article>
+
+      <!-- IA -->
+      <article class="card c-ia rv d2">
+        <span class="tag">Assistant IA</span><h3>Pose-lui tes questions</h3>
+        <div class="chat" id="chat" aria-live="polite"></div>
+        <div class="brands"><span>Claude</span><span>ChatGPT</span><span>Gemini</span><span>Mistral</span><span>…avec tes propres clés</span></div>
+      </article>
+
+      <!-- Bilan -->
+      <article class="card c-bilan rv d1">
+        <span class="tag">Sessions</span><h3>Ton bilan de la semaine</h3>
+        <p class="d">FPS, températures et saccades de chaque partie, à exporter en image pour le partager.</p>
+        <div class="shot-tilt" id="tilt"><img src="assets/img/sessions-semaine.webp" alt="Bilan de la semaine de Dynamic Island" loading="lazy"></div>
+      </article>
+
+      <!-- Perso -->
+      <article class="card c-perso rv d2">
+        <span class="tag">Personnalisable</span><h3>À ton image</h3>
+        <p class="d">Choisis une couleur : elle change tout le site. C'est pareil dans l'appli.</p>
+        <div class="swatches" id="pSw"></div>
+        <div class="pv" aria-hidden="true">
+          <div class="pv-row"><span>Interrupteur</span><i class="tog"></i></div>
+          <div class="pv-row"><span>Progression</span><i class="pbar"><b></b></i></div>
+          <div class="pv-row"><span>Bouton</span><span class="btn sm">Télécharger</span></div>
+        </div>
+      </article>
     </div>
   </div>
 </section>
 
-<section id="captures" class="band">
-  <div class="wrap">
-    <h2>Un aperçu</h2>
-    <p class="sub">Réglable à ton goût : thèmes, couleurs, tailles, animations.</p>
-    <div class="shots">
-      <figure class="shot"><img src="assets/img/reglages-apparence.webp" alt="Réglages : styles de l'île" loading="lazy"><figcaption><b>Des styles prêts à l'emploi</b>Un clic change l'île, les réglages, l'overlay et les paroles.</figcaption></figure>
-      <figure class="shot"><img src="assets/img/sessions-semaine.webp" alt="Bilan de la semaine" loading="lazy"><figcaption><b>Ton bilan de la semaine</b>Temps de jeu, jeu préféré, températures, saccades : à copier ou enregistrer en image.</figcaption></figure>
-      <figure class="shot"><img src="assets/img/reglages-reticule.webp" alt="Réglages du réticule" loading="lazy"><figcaption><b>Un réticule par jeu</b>Raccourci Ctrl + Maj + X et profils qui changent tout seuls.</figcaption></figure>
-      <figure class="shot"><img src="assets/img/reglages-overlay.webp" alt="Réglages de l'overlay" loading="lazy"><figcaption><b>Overlay de jeu</b>FPS, températures, charge : tu choisis ce qui s'affiche et où.</figcaption></figure>
-    </div>
+<!-- ═════ Galerie ═════ -->
+<section id="apercu" data-label="Aperçu" style="padding-bottom:70px">
+  <div class="wrap"><p class="kicker rv">Dans l'appli</p><h2 class="rv d1">Un aperçu <span class="shine">réel.</span></h2>
+    <p class="sub rv d2">De vraies captures du logiciel. Fais défiler →</p></div>
+  <div class="gal rv" id="gal">
+    <figure><img src="assets/img/reglages-apparence.webp" alt="Réglages : styles" loading="lazy"><figcaption><b>Des styles prêts à l'emploi</b>Un clic change l'île, les réglages, l'overlay et les paroles.</figcaption></figure>
+    <figure><img src="assets/img/reglages-reticule.webp" alt="Réglages du réticule" loading="lazy"><figcaption><b>Le réticule et ses profils</b>Un profil par jeu, qui change tout seul quand le jeu se lance.</figcaption></figure>
+    <figure><img src="assets/img/reglages-overlay.webp" alt="Réglages de l'overlay" loading="lazy"><figcaption><b>L'overlay de jeu</b>FPS, températures, charge : tu choisis ce qui s'affiche et où.</figcaption></figure>
+    <figure><img src="assets/img/ile-stats.webp" alt="L'île ouverte sur les stats" loading="lazy" style="object-fit:contain;padding:26px;aspect-ratio:16/10"><figcaption><b>L'île, côté stats</b>Processeur, carte graphique, mémoire et ping au survol.</figcaption></figure>
+    <figure><img src="assets/img/sessions-semaine.webp" alt="Bilan de la semaine" loading="lazy"><figcaption><b>Le bilan de la semaine</b>Temps de jeu, jeu préféré, températures et saccades.</figcaption></figure>
   </div>
+  <div class="gal-nav"><button id="gPrev" aria-label="Précédent">←</button><button id="gNext" aria-label="Suivant">→</button></div>
 </section>
 
-<section id="installer">
-  <div class="wrap">
-    <h2>Installer en 3 étapes</h2>
-    <p class="sub">Aucun droit administrateur n'est nécessaire.</p>
+<!-- ═════ Chiffres ═════ -->
+<section style="padding:40px 0 90px">
+  <div class="wrap"><div class="nums">
+    <div class="num rv"><b data-n="32">0</b><span>Mo à télécharger</span></div>
+    <div class="num rv d1"><b data-n="0">0</b><span>publicité, 0 traceur</span></div>
+    <div class="num rv d2"><b data-n="9">0</b><span>fonctions dans une seule île</span></div>
+    <div class="num rv d3"><b data-n="2">0</b><span>clics pour l'installer</span></div>
+  </div></div>
+</section>
+
+<!-- ═════ Installer ═════ -->
+<section id="installer" data-label="Installer">
+  <div class="wrap"><p class="kicker rv">Prête en 1 minute</p><h2 class="rv d1">Installe-la.</h2>
+    <p class="sub rv d2">Aucun droit administrateur nécessaire.</p>
     <div class="steps">
-      <div class="step"><h3>Télécharge</h3><p>Récupère <b>DynamicIsland-win-Setup.exe</b> avec le bouton ci-dessous (32 Mo).</p></div>
-      <div class="step"><h3>Lance l'installateur</h3><p>Il installe l'île (et .NET 8 si besoin) puis la démarre. Si Windows affiche « SmartScreen », clique sur <i>Informations complémentaires</i> puis <i>Exécuter quand même</i> : l'appli n'est pas encore signée numériquement.</p></div>
-      <div class="step"><h3>Entre ta licence</h3><p>Colle ta clé de licence quand l'île la demande. Les mises à jour suivantes se font toutes seules.</p></div>
+      <div class="step rv"><h3>Télécharge</h3><p>Récupère <b>DynamicIsland-win-Setup.exe</b> (32 Mo) avec le bouton ci-dessous.</p></div>
+      <div class="step rv d1"><h3>Lance</h3><p>L'installateur met l'île en place (et .NET 8 si besoin). Si Windows affiche « SmartScreen » : <i>Informations complémentaires</i> puis <i>Exécuter quand même</i>, l'appli n'est pas encore signée numériquement.</p></div>
+      <div class="step rv d2"><h3>Active</h3><p>Colle ta clé de licence quand l'île la demande. Les mises à jour suivantes se font toutes seules.</p></div>
     </div>
-    <p style="text-align:center;margin-top:34px">
-      <a class="btn" href="https://github.com/sonlikehisfather/dynamic-island-releases/releases/latest/download/DynamicIsland-win-Setup.exe">⬇ Télécharger l'installateur</a>
-    </p>
-    <p style="text-align:center;color:var(--muted);font-size:14px">
-      Toutes les versions : <a href="https://github.com/sonlikehisfather/dynamic-island-releases/releases">page des versions</a>
-    </p>
+    <div class="dl rv"><a class="btn" href="https://github.com/sonlikehisfather/dynamic-island-releases/releases/latest/download/DynamicIsland-win-Setup.exe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 5-5m-5 5-5-5M5 20h14"/></svg>Télécharger pour Windows</a>
+      <small>Windows 10 (2004+) / 11 · <a href="https://github.com/sonlikehisfather/dynamic-island-releases/releases" style="color:var(--cyan)">toutes les versions</a></small></div>
   </div>
 </section>
 
-<section id="faq">
-  <div class="wrap" style="max-width:760px">
-    <h2>Questions fréquentes</h2>
-    <p class="sub">Les réponses courtes.</p>
-    <details><summary>Comment obtenir une licence ?</summary><p>Dynamic Island demande une clé de licence personnelle. Pour en obtenir une, contacte l'auteur via sa <a href="https://github.com/sonlikehisfather">page GitHub</a>.</p></details>
-    <details><summary>Sur quels Windows ça marche ?</summary><p>Windows 10 (version 2004 ou plus récente) et Windows 11. L'installateur ajoute .NET 8 tout seul si ton PC ne l'a pas.</p></details>
-    <details><summary>Est-ce sans danger avec les jeux et les anti-triche ?</summary><p>L'overlay et le réticule sont de simples fenêtres posées par-dessus l'écran. Rien n'est injecté dans les jeux, comme la Xbox Game Bar.</p></details>
-    <details><summary>Que fait l'appli de mes données ?</summary><p>L'essentiel reste sur ton PC. Ce qui peut en sortir (licence, mises à jour, paroles, assistant IA…) est détaillé dans la <a href="confidentialite.html">politique de confidentialité</a>. Il n'y a ni publicité ni outil d'analyse.</p></details>
-    <details><summary>Mes réglages survivent-ils aux mises à jour ?</summary><p>Oui. Ils sont gardés dans ton dossier utilisateur, et une copie de sécurité est faite à chaque nouvelle version.</p></details>
-    <details><summary>Comment la désinstaller ?</summary><p>Paramètres Windows → Applications → Dynamic Island → Désinstaller. Tes réglages restent dans <code>%AppData%\DynamicIsland</code> tant que tu ne supprimes pas ce dossier.</p></details>
-  </div>
+<!-- ═════ FAQ ═════ -->
+<section id="faq" data-label="Questions" style="padding-top:30px">
+  <div class="wrap"><p class="kicker rv">Les réponses courtes</p><h2 class="rv d1">Questions.</h2><div style="height:34px"></div>
+    <div class="faq">
+      <details class="rv"><summary>Comment obtenir une licence ?</summary><p>Dynamic Island demande une clé de licence personnelle. Pour en obtenir une, contacte l'auteur via sa <a href="https://github.com/sonlikehisfather">page GitHub</a>.</p></details>
+      <details class="rv"><summary>Sur quels Windows ça marche ?</summary><p>Windows 10 (version 2004 ou plus récente) et Windows 11. L'installateur ajoute .NET 8 tout seul si ton PC ne l'a pas.</p></details>
+      <details class="rv"><summary>C'est sans danger avec les jeux et les anti-triche ?</summary><p>L'overlay et le réticule sont de simples fenêtres posées par-dessus l'écran. Rien n'est injecté dans les jeux, comme la Xbox Game Bar.</p></details>
+      <details class="rv"><summary>Que fait l'appli de mes données ?</summary><p>L'essentiel reste sur ton PC. Ce qui peut en sortir (licence, mises à jour, paroles, assistant IA…) est détaillé dans la <a href="confidentialite.html">politique de confidentialité</a>. Aucune publicité, aucun outil d'analyse.</p></details>
+      <details class="rv"><summary>Mes réglages survivent-ils aux mises à jour ?</summary><p>Oui. Ils sont gardés dans ton dossier utilisateur, avec une copie de sécurité à chaque nouvelle version.</p></details>
+      <details class="rv"><summary>Comment la désinstaller ?</summary><p>Paramètres Windows → Applications → Dynamic Island → Désinstaller. Tes réglages restent dans <code>%AppData%\DynamicIsland</code> tant que tu ne supprimes pas ce dossier.</p></details>
+    </div></div>
 </section>
+</main>
 
 <footer>
   <div class="wrap">
-    <div>© 2026 sonlikehisfather · <a href="https://github.com/sonlikehisfather">GitHub</a></div>
-    <ul>
-      <li><a href="mentions-legales.html">Mentions légales</a></li>
-      <li><a href="confidentialite.html">Confidentialité</a></li>
-      <li><a href="conditions.html">Conditions d'utilisation</a></li>
-      <li><a href="licences-tierces.html">Licences tierces</a></li>
-    </ul>
+    <div class="word" aria-hidden="true">Dynamic Island</div>
+    <div class="foot">
+      <div>© 2026 sonlikehisfather · <a href="https://github.com/sonlikehisfather">GitHub</a></div>
+      <ul>
+        <li><a href="mentions-legales.html">Mentions légales</a></li>
+        <li><a href="confidentialite.html">Confidentialité</a></li>
+        <li><a href="conditions.html">Conditions d'utilisation</a></li>
+        <li><a href="licences-tierces.html">Licences tierces</a></li>
+      </ul>
+    </div>
   </div>
 </footer>
 
+<script src="assets/app.js" defer></script>
 </body>
 </html>
