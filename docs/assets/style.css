@@ -283,3 +283,92 @@ footer { padding: 60px 0 40px; border-top: 1px solid var(--line); overflow: hidd
   *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; }
   .rv { opacity: 1; transform: none; } html { scroll-behavior: auto; }
 }
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   VERSION ORDINATEUR (≥ 1100 px) — la version téléphone ne change pas.
+   ════════════════════════════════════════════════════════════════════════ */
+.only-d { display: none; }
+.hero-vis, .monitor-wrap, .monitor, .screen { display: contents; }   /* téléphone : ces blocs sont transparents */
+.dk { display: none; }
+
+@media (min-width: 1100px) {
+  .only-d { display: block; }
+  .wrap { width: min(1320px, 100% - 96px); }
+
+  /* curseur lumineux */
+  .spot { position: fixed; z-index: -1; left: 0; top: 0; width: 720px; height: 720px; margin: -360px 0 0 -360px; border-radius: 50%; pointer-events: none;
+    background: radial-gradient(circle, rgba(100, 210, 255, .13), rgba(191, 90, 242, .07) 40%, transparent 68%); will-change: transform; }
+
+  /* ───── Héros : texte à gauche, écran de PC à droite ───── */
+  .hero { padding: 112px 0 30px; min-height: 100vh; display: flex; align-items: center; }
+  .hero .wrap { display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); column-gap: 64px; text-align: left; align-items: center;
+    grid-template-areas: "eb vis" "h vis" "ld vis" "ct vis" "fn vis"; grid-template-rows: auto auto auto auto auto; align-content: center; }
+  .eyebrow { grid-area: eb; justify-self: start; }
+  .hero h1 { grid-area: h; font-size: clamp(60px, 6.4vw, 118px); margin: 22px 0 22px; }
+  .hero h1 .shine { display: block; }   /* « son île. » sur sa propre ligne */
+  .lead { grid-area: ld; margin: 0; max-width: 540px; font-size: 20px; }
+  .cta { grid-area: ct; justify-content: flex-start; margin-top: 32px; }
+  .fine { grid-area: fn; }
+  .hero-vis { display: block; grid-area: vis; grid-row: 1 / span 5; align-self: center; }
+
+  .monitor-wrap { display: block; perspective: 1700px; position: relative; padding-bottom: 54px; }
+  .monitor { display: block; position: relative; aspect-ratio: 16 / 10; padding: 13px; border-radius: 30px; background: linear-gradient(150deg, #2c2c33, #0c0c0f 55%, #1b1b20);
+    box-shadow: 0 70px 150px -30px #000, 0 0 0 1px rgba(255, 255, 255, .13), inset 0 0 0 1px rgba(255, 255, 255, .05);
+    transform: rotateY(-8deg) rotateX(3deg); transform-style: preserve-3d; transition: transform .5s var(--soft); will-change: transform; }
+  .screen { display: block; position: relative; width: 100%; height: 100%; border-radius: 19px; overflow: hidden;
+    background: radial-gradient(300px 220px at 74% 34%, rgba(255, 159, 10, .42), transparent 70%), radial-gradient(420px 300px at 16% 86%, rgba(100, 210, 255, .28), transparent 70%), linear-gradient(180deg, #0b1630, #1a0f2e 62%, #07070b); }
+  .screen::before { content: ""; position: absolute; inset: auto 0 0 0; height: 46%; background: linear-gradient(rgba(255, 255, 255, .07) 1px, transparent 1px) 0 0/100% 38px, linear-gradient(90deg, rgba(255, 255, 255, .07) 1px, transparent 1px) 0 0/70px 100%; transform: perspective(420px) rotateX(58deg); transform-origin: bottom; }
+  .screen::after { content: ""; position: absolute; inset: 0; background: linear-gradient(115deg, rgba(255, 255, 255, .07), transparent 38%); pointer-events: none; }
+  .dk { display: block; position: absolute; }
+  .dk-target { right: 15%; top: 46%; width: 56px; height: 56px; border-radius: 50%; background: radial-gradient(circle, #ff375f 0 22%, #fff 23% 40%, #ff375f 41% 60%, #fff 61%); box-shadow: 0 0 50px rgba(255, 55, 95, .55); opacity: .9; }
+  .dk-xh { left: 50%; top: 56%; width: 74px; transform: translate(-50%, -50%); filter: drop-shadow(0 0 8px rgba(0, 0, 0, .6)); }
+  .dk-hud { left: 22px; bottom: 74px; width: 118px; filter: drop-shadow(0 12px 24px rgba(0, 0, 0, .6)); }
+  .dk-bar { left: 50%; bottom: 12px; transform: translateX(-50%); display: flex; gap: 12px; padding: 9px 18px; border-radius: 14px; background: rgba(20, 20, 28, .65); backdrop-filter: blur(10px); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .1); }
+  .dk-bar i { display: block; width: 18px; height: 18px; border-radius: 6px; background: rgba(255, 255, 255, .22); }
+  .dk-bar i:nth-child(1) { background: var(--green); } .dk-bar i:nth-child(2) { background: var(--cyan); } .dk-bar i:nth-child(3) { background: var(--violet); }
+  .stand { left: 50%; bottom: 0; width: 34%; height: 54px; transform: translateX(-50%); background: linear-gradient(#1b1b20, #08080a); clip-path: polygon(14% 0, 86% 0, 100% 100%, 0 100%); border-radius: 0 0 14px 14px; }
+  .stand::after { content: ""; position: absolute; left: -22%; right: -22%; bottom: 0; height: 9px; border-radius: 6px; background: #2a2a31; }
+
+  /* l'île vit en haut de l'écran, à l'échelle de l'écran */
+  .stage { position: absolute; left: 0; right: 0; top: 14px; height: auto; margin: 0; display: block; z-index: 3; }
+  .bigisle { margin: 0 auto; transform: scale(.7); transform-origin: top center; }
+  /* avec l'effet de taille, le halo (z-index négatif) passerait devant le fond noir : on met le noir dans une couche à part */
+  .bigisle { background: transparent; }
+  .bigisle::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: #000; z-index: 0; }
+  .bigisle .v, .bigisle .ring { z-index: 1; }
+  .states { margin: 22px 0 0; justify-content: flex-start; }
+
+  /* ───── Section « Ce qu'elle fait » ───── */
+  .story { padding: 130px 0 60px; }
+  .story-grid { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 70px; margin-top: 60px; align-items: start; }
+  .story-step { min-height: 64vh; display: flex; flex-direction: column; justify-content: center; padding: 20px 0; opacity: .28; transition: opacity .5s var(--soft), transform .6s var(--spring); transform: translateX(-10px); }
+  .story-step.on { opacity: 1; transform: none; }
+  .story-step .n { font-size: 15px; font-weight: 800; letter-spacing: .2em; color: var(--acc); margin-bottom: 14px; }
+  .story-step h3 { font-size: clamp(38px, 3.8vw, 60px); line-height: 1.02; letter-spacing: -.04em; margin-bottom: 16px; }
+  .story-step p { font-size: 20px; color: #b4b4be; max-width: 520px; }
+  .story-vis { position: sticky; top: 104px; height: min(640px, calc(100vh - 140px)); }
+  .sv-frame { position: relative; height: 100%; border-radius: 36px; background: rgba(255, 255, 255, .035); box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; }
+  .sv-frame::before { content: ""; position: absolute; inset: 0; background: radial-gradient(500px 360px at 50% 0%, rgba(191, 90, 242, .16), transparent 70%); }
+  .sv { position: absolute; inset: 0; display: grid; place-items: center; padding: 34px; opacity: 0; transform: scale(.94) translateY(16px); filter: blur(6px); transition: opacity .45s, transform .7s var(--spring), filter .45s; pointer-events: none; }
+  .sv.on { opacity: 1; transform: none; filter: none; }
+  .sv-isle { position: relative; width: min(500px, 100%); padding: 26px 30px; border-radius: 44px; background: #000; display: grid; gap: 16px; box-shadow: 0 0 0 1px rgba(255, 255, 255, .1), 0 0 90px 6px rgba(255, 55, 95, .35), 0 0 180px 20px rgba(191, 90, 242, .22); }
+  .sv-isle .top { display: flex; align-items: center; gap: 16px; } .sv-isle .art { width: 68px; height: 68px; border-radius: 20px; }
+  .sv-isle .tx b { font-size: 19px; } .sv-isle .ctl { display: flex; justify-content: center; gap: 44px; } .sv-isle .ctl svg { width: 26px; height: 26px; fill: #fff; }
+  .sv-isle .prog { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--mut); } .sv-isle .prog .bar { flex: 1; height: 6px; border-radius: 3px; background: rgba(255, 255, 255, .16); overflow: hidden; } .sv-isle .prog .bar i { display: block; height: 100%; width: 38%; background: var(--orange); border-radius: 3px; }
+  .sv-game { position: relative; width: 100%; height: 100%; border-radius: 24px; overflow: hidden; box-shadow: inset 0 0 0 1px var(--line);
+    background: radial-gradient(300px 230px at 72% 30%, rgba(255, 159, 10, .4), transparent 70%), radial-gradient(380px 300px at 18% 84%, rgba(100, 210, 255, .27), transparent 70%), linear-gradient(180deg, #0c1730, #1a0f2e 62%, #07070b); }
+  .sv-game::before { content: ""; position: absolute; inset: auto 0 0 0; height: 46%; background: linear-gradient(rgba(255, 255, 255, .07) 1px, transparent 1px) 0 0/100% 40px, linear-gradient(90deg, rgba(255, 255, 255, .07) 1px, transparent 1px) 0 0/72px 100%; transform: perspective(420px) rotateX(58deg); transform-origin: bottom; }
+  .bigfps { position: absolute; right: 34px; bottom: 28px; font-size: 96px; font-weight: 800; letter-spacing: -.05em; color: var(--green); line-height: 1; text-shadow: 0 0 40px rgba(48, 209, 88, .5); } .bigfps small { font-size: 22px; letter-spacing: .12em; color: var(--mut); margin-left: 8px; }
+  .shapes { position: absolute; left: 0; right: 0; bottom: 26px; display: flex; justify-content: center; gap: 18px; }
+  .shapes span { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border-radius: 999px; background: rgba(255, 255, 255, .1); box-shadow: inset 0 0 0 1px var(--line); font-weight: 600; font-size: 15px; } .shapes img { width: 30px; }
+  .sv-replay { width: min(520px, 100%); display: grid; gap: 22px; } .sv-replay > img { width: 100%; }
+  .sv-replay .tl { margin: 0; } .sv2 { position: absolute; top: 0; bottom: 0; right: 0; width: 50%; border-radius: 14px; background: linear-gradient(90deg, rgba(48, 209, 88, .35), rgba(48, 209, 88, .9)); }
+  .sv-chat { width: min(520px, 100%); display: grid; gap: 12px; } .sv-chat .bub { font-size: 17px; }
+
+  /* cartes de démos : un peu plus aérées */
+  section { padding: 130px 0; }
+  .bento { gap: 20px; } .card { padding: 32px; border-radius: 34px; } .card h3 { font-size: 28px; }
+}
+@media (min-width: 1700px) { .wrap { width: min(1440px, 100% - 120px); } }
+@media (min-width: 1500px) { .hero .wrap { column-gap: 90px; } .bigisle { transform: scale(.78); } }

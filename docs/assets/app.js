@@ -6,6 +6,8 @@
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const hover = matchMedia('(hover: hover)').matches;
   const sleep = ms => new Promise(r => setTimeout(r, ms));
+  { const only = new URLSearchParams(location.search).get('only'); if (only) document.querySelectorAll('main > *').forEach(el => { if (el.id !== only) el.style.display = 'none'; }); }   // (test des captures)
+  { const go = new URLSearchParams(location.search).get('go'); if (go) addEventListener('load', () => setTimeout(() => document.getElementById(go)?.scrollIntoView(), 80)); }   // (test des captures)
   // mode de test (captures d'écran) : ?nt=1 coupe les transitions pour voir l'état final tout de suite
   if (new URLSearchParams(location.search).has('nt')) document.documentElement.classList.add('notrans');
   const rnd = (a, b) => a + Math.random() * (b - a);
@@ -240,4 +242,32 @@
     new IntersectionObserver((es, o) => { if (!es[0].isIntersecting) return; o.disconnect();
       const t0 = performance.now(), d = 1300; const f = t => { const p = Math.min(1, (t - t0) / d); b.textContent = Math.round(to * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(f); }; requestAnimationFrame(f); }, { threshold: .6 }).observe(b);
   });
+
+  /* ═════ Version ordinateur ═════ */
+  if (matchMedia('(min-width: 1100px)').matches) {
+    // 1) lueur qui suit le curseur
+    const spot = $('#spot');
+    if (spot && hover && !reduce) {
+      let tx = innerWidth / 2, ty = innerHeight / 3, x = tx, y = ty;
+      addEventListener('pointermove', e => { tx = e.clientX; ty = e.clientY; }, { passive: true });
+      const loop = () => { x += (tx - x) * .08; y += (ty - y) * .08; spot.style.transform = `translate(${x}px,${y}px)`; requestAnimationFrame(loop); };
+      loop();
+    }
+    // 2) l'écran de PC s'incline avec la souris
+    const wrap = $('#monWrap'), mon = wrap && $('.monitor', wrap);
+    if (mon && hover && !reduce) {
+      const base = { ry: -8, rx: 3 };
+      wrap.addEventListener('pointermove', e => { const r = wrap.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
+        mon.style.transform = `rotateY(${base.ry + x * 9}deg) rotateX(${base.rx - y * 8}deg)`; });
+      wrap.addEventListener('pointerleave', () => { mon.style.transform = ''; });
+    }
+    // 3) « Ce qu'elle fait » : le visuel suit l'étape affichée
+    const steps = $$('.story-step'), vis = $$('.sv');
+    if (steps.length) {
+      const set = k => { steps.forEach(s => s.classList.toggle('on', s.dataset.k === k)); vis.forEach(v => v.classList.toggle('on', v.dataset.k === k)); };
+      const so2 = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) set(e.target.dataset.k); }), { rootMargin: '-48% 0px -48% 0px' });
+      steps.forEach(s => so2.observe(s));
+      const kk = new URLSearchParams(location.search).get('k'); if (kk !== null) set(kk);   // (test des captures)
+    }
+  }
 })();

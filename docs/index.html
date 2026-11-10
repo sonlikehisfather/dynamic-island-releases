@@ -16,6 +16,7 @@
 
 <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
 <div class="grain" aria-hidden="true"></div>
+<div class="spot only-d" id="spot" aria-hidden="true"></div>
 
 <!-- ═════ L'île de navigation : elle suit la section et s'ouvre au survol ═════ -->
 <header class="isle" id="isle">
@@ -42,6 +43,12 @@
     <h1 class="rv d1">Ton PC<br>a enfin <span class="shine">son île.</span></h1>
     <p class="lead rv d2">Musique, stats, FPS, réticule, replay, IA… tout vit dans une île animée posée en haut de ton écran. Elle s'ouvre quand tu en as besoin, et disparaît quand tu joues.</p>
 
+    <div class="hero-vis">
+      <div class="monitor-wrap" id="monWrap"><div class="monitor"><div class="screen">
+        <div class="dk dk-sky"></div>
+        <div class="dk dk-target"></div>
+        <img class="dk dk-xh" src="assets/img/reticule-croix.webp" alt="">
+        <img class="dk dk-hud" src="assets/img/overlay.webp" alt="">
     <div class="stage rv d3" aria-label="Démonstration interactive de l'île">
       <div class="bigisle" id="big">
         <div class="halo" id="halo"></div><div class="ring"></div>
@@ -77,8 +84,11 @@
       </div>
     </div>
 
+        <div class="dk dk-bar"><i></i><i></i><i></i><i></i><i></i></div>
+      </div></div><div class="dk stand"></div></div>
     <div class="states rv d3" id="states" role="tablist" aria-label="États de l'île">
       <button class="on" data-i="0">🎵 Musique</button><button data-i="1">▶ Lecteur</button><button data-i="2">📊 Stats</button><button data-i="3">🔔 Notification</button><button data-i="4">🎬 Replay</button>
+    </div>
     </div>
     <div class="cta rv d3">
       <a class="btn" href="https://github.com/sonlikehisfather/dynamic-island-releases/releases/latest/download/DynamicIsland-win-Setup.exe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 5-5m-5 5-5-5M5 20h14"/></svg>Télécharger</a>
@@ -92,6 +102,37 @@
   <span>MUSIQUE</span><span>PAROLES</span><span>STATS</span><span>OVERLAY FPS</span><span>RÉTICULE</span><span>INSTANT REPLAY</span><span>ASSISTANT IA</span><span>BILAN</span><span>THÈMES</span>
   <span>MUSIQUE</span><span>PAROLES</span><span>STATS</span><span>OVERLAY FPS</span><span>RÉTICULE</span><span>INSTANT REPLAY</span><span>ASSISTANT IA</span><span>BILAN</span><span>THÈMES</span>
 </div></div>
+
+<!-- ═════ Ce qu'elle fait : le texte défile, le visuel change (ordinateur) ═════ -->
+<section class="story only-d" id="fonctions" data-label="Fonctions">
+  <div class="wrap">
+    <p class="kicker">Tout ce qu'elle sait faire</p>
+    <h2>Une île. <span class="shine">Sept pouvoirs.</span></h2>
+    <div class="story-grid">
+      <div class="story-steps">
+        <article class="story-step on" data-k="0"><span class="n">01</span><h3>Musique &amp; paroles</h3><p>Pochette, contrôles, paroles synchronisées. Et à chaque changement de morceau, un halo aux couleurs de la pochette fait le tour de l'île.</p></article>
+        <article class="story-step" data-k="1"><span class="n">02</span><h3>Stats du PC</h3><p>Processeur, carte graphique, mémoire, températures et ping. Un simple survol suffit.</p></article>
+        <article class="story-step" data-k="2"><span class="n">03</span><h3>Overlay FPS</h3><p>Un compteur de FPS dans un coin de l'écran. Ce n'est qu'une fenêtre posée par-dessus le jeu : rien n'est injecté.</p></article>
+        <article class="story-step" data-k="3"><span class="n">04</span><h3>Réticule</h3><p>Un viseur au centre de l'écran : formes, couleurs, image perso, raccourci Ctrl&nbsp;+&nbsp;Maj&nbsp;+&nbsp;X, et un profil différent par jeu.</p></article>
+        <article class="story-step" data-k="4"><span class="n">05</span><h3>Instant replay</h3><p>L'île garde les dernières secondes de ta partie en mémoire. Un raccourci, et ton moment fort est enregistré.</p></article>
+        <article class="story-step" data-k="5"><span class="n">06</span><h3>Assistant IA</h3><p>Pose tes questions à Claude, ChatGPT, Gemini et d'autres, avec tes propres clés. Il connaît ton média et l'état de ton PC.</p></article>
+        <article class="story-step" data-k="6"><span class="n">07</span><h3>Sessions &amp; bilan</h3><p>FPS, températures et saccades de chaque partie. Le bilan de la semaine s'exporte en image pour le partager.</p></article>
+      </div>
+      <div class="story-vis" aria-hidden="true"><div class="sv-frame">
+        <div class="sv on" data-k="0"><div class="sv-isle"><div class="top"><div class="art" style="--a1:#bf5af2;--a2:#ff375f;--a3:#ff9f0a"></div><div class="tx"><b>Minuit Ardent</b><span>Nova</span></div><div class="eqb"><i></i><i></i><i></i><i></i></div></div>
+          <div class="prog"><span>1:12</span><div class="bar"><i></i></div><span>-2:04</span></div>
+          <div class="ctl"><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zM9.5 12 18 6v12z"/></svg><svg viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg><svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 6l8.5 6L6 18z"/></svg></div></div></div>
+        <div class="sv" data-k="1"><img src="assets/img/ile-stats.webp" alt="" style="width:92%;filter:drop-shadow(0 0 60px rgba(48,209,88,.35))"></div>
+        <div class="sv" data-k="2"><div class="sv-game"><img src="assets/img/overlay.webp" alt="" style="position:absolute;left:28px;top:28px;width:200px"><div class="bigfps">238<small>FPS</small></div></div></div>
+        <div class="sv" data-k="3"><div class="sv-game"><img src="assets/img/reticule-croix.webp" alt="" style="position:absolute;left:50%;top:44%;width:150px;transform:translate(-50%,-50%)">
+          <div class="shapes"><span><img src="assets/img/reticule-croix.webp" alt="">Croix</span><span><img src="assets/img/reticule-cercle.webp" alt="">Cercle</span><span><img src="assets/img/reticule-t.webp" alt="">T</span></div></div></div>
+        <div class="sv" data-k="4"><div class="sv-replay"><img src="assets/img/ile-notification.webp" alt=""><div class="tl"><div class="hd"><span><b>●</b> Replay en cours</span><span>60 s</span></div><div class="track saved"><div class="sv2"></div><div class="play"></div></div></div></div></div>
+        <div class="sv" data-k="5"><div class="sv-chat"><div class="bub me on">Pourquoi mon PC chauffe en jeu ?</div><div class="bub ai on">Ta carte graphique monte à 64 °C en pointe : c'est normal sous charge. Rien d'inquiétant 👍</div><div class="bub me on">Et mes FPS d'hier ?</div><div class="bub ai on">2 épisodes de saccades sur ton jeu préféré. Baisse un peu les ombres.</div></div></div>
+        <div class="sv" data-k="6"><img src="assets/img/sessions-semaine.webp" alt="" style="width:100%;border-radius:22px;box-shadow:0 40px 80px -30px #000,0 0 0 1px rgba(255,255,255,.1)"></div>
+      </div></div>
+    </div>
+  </div>
+</section>
 
 <!-- ═════ Essaie-la : de vraies démos à manipuler ═════ -->
 <section id="essaie" data-label="Essaie-la">
