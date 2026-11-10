@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Politique de confidentialité · Dynamic Island</title>
+  <meta name="robots" content="index,follow">
+  <meta name="theme-color" content="#0b0b0d">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<nav><div class="wrap">
+  <a class="brand" href="index.html"><i></i> Dynamic Island</a>
+  <a class="btn ghost" style="padding:9px 18px;font-size:14px" href="index.html">← Retour au site</a>
+</div></nav>
+<main class="wrap"><article class="doc">
+<h1>Politique de confidentialité</h1>
+<div class="date">Dernière mise à jour : 10 novembre 2026</div>
+<p>En résumé : Dynamic Island fonctionne surtout sur ton PC. sonlikehisfather ne collecte pas de statistiques d'usage, n'a pas de système de compte et ne vend aucune donnée. Voici précisément ce qui reste sur ton PC et ce qui peut en sortir.</p>
+<h2>Ce qui reste sur ton PC</h2>
+<p>Tout est stocké dans le dossier %AppData%\DynamicIsland de ton compte Windows :</p>
+<ul>
+<li>tes réglages ;</li>
+<li>tes statistiques d'écoute, ton temps de jeu et ton historique de sessions de jeu ;</li>
+<li>ta licence et, si tu les enregistres, tes clés API (chiffrées avec Windows, uniquement lisibles par ton compte) ;</li>
+<li>les vidéos de l'instant replay et de l'enregistrement d'écran, dans ton dossier Vidéos ;</li>
+<li>un journal d'erreurs (crash.log) qui n'est jamais envoyé automatiquement.</li>
+</ul>
+<p>Pour tout effacer, désinstalle l'île puis supprime ce dossier.</p>
+<h2>Ce que l'appli lit sur ton PC</h2>
+<p>Pour fonctionner, l'île lit localement : le média en cours de lecture, l'état de ton PC (processeur, carte graphique, mémoire, températures, FPS), les applications en plein écran, les notifications Windows (si tu l'actives), le presse-papiers (si tu l'actives), l'indicateur d'utilisation du micro et de la webcam (qui indique seulement quelle application les utilise, sans jamais enregistrer le son ni l'image), et l'état des batteries Bluetooth. Ces informations ne quittent pas ton PC, sauf cas listés ci-dessous.</p>
+<h2>Ce qui peut sortir de ton PC</h2>
+<ul>
+<li>Licence : à l'activation puis régulièrement, l'appli envoie au serveur de licences ta clé de licence et un identifiant technique de ton PC (une empreinte irréversible de l'identifiant Windows, pas ton nom). Le serveur s'en sert uniquement pour vérifier que la licence n'est pas utilisée sur plusieurs PC, et l'héberge chez Cloudflare. Cloudflare voit aussi, comme tout hébergeur, l'adresse IP de la requête.</li>
+<li>Mises à jour : l'appli interroge GitHub pour savoir si une nouvelle version existe. GitHub voit l'adresse IP, comme pour n'importe quel téléchargement.</li>
+<li>Paroles : le titre et l'artiste du morceau sont envoyés à LRCLIB (lrclib.net) pour trouver les paroles.</li>
+<li>Reconnaissance musicale (si tu l'utilises, avec ta propre clé) : environ 9 secondes du son de ton PC sont envoyées à AudD (audd.io) uniquement quand tu lances la reconnaissance.</li>
+<li>Assistant IA (si tu l'actives, avec ta propre clé) : tes messages, ainsi que le contexte que tu autorises (média en cours, état du PC, heure), sont envoyés au service que tu as choisi (Anthropic, OpenAI, Google, Mistral, Groq, OpenRouter, DeepSeek ou un service compatible). Leurs règles de confidentialité s'appliquent alors.</li>
+<li>Test de connexion (ping) : l'appli contacte l'adresse choisie dans les réglages (1.1.1.1 par défaut) pour mesurer la latence.</li>
+<li>Raccourcis vers des sites : l'icône du site est demandée à Google (google.com/s2/favicons), qui voit donc le nom de domaine.</li>
+<li>Capture d'écran : au premier usage, ffmpeg est téléchargé depuis GitHub.</li>
+</ul>
+<p>Rien d'autre n'est envoyé. Il n'y a ni publicité, ni traceur, ni outil d'analyse.</p>
+<h2>Base légale et durée de conservation</h2>
+<p>Les données du serveur de licences (identifiant de licence, empreintes de PC associées, dates d'activation) sont traitées pour l'exécution du service de licence et pour la protection du logiciel contre le partage non autorisé. Elles sont conservées tant que la licence existe. Les données locales restent sur ton PC jusqu'à ce que tu les supprimes.</p>
+<h2>Tes droits (RGPD)</h2>
+<p>Tu peux demander l'accès, la rectification ou la suppression des données liées à ta licence, ou t'opposer à leur traitement, en contactant l'éditeur via la page de contact. Tu peux aussi introduire une réclamation auprès de la CNIL (cnil.fr).</p>
+<h2>Mineurs</h2>
+<p>L'appli n'est pas destinée à collecter des données sur des enfants.</p>
+<h2>Modifications</h2>
+<p>Cette politique peut évoluer avec l'appli. La date de dernière mise à jour figure en haut de la page.</p>
+<a class="back" href="index.html">← Retour au site</a>
+</article></main>
+<footer><div class="wrap">
+  <div>© 2026 sonlikehisfather · <a href="https://github.com/sonlikehisfather">GitHub</a></div>
+  <ul>
+    <li><a href="mentions-legales.html">Mentions légales</a></li>
+    <li><a href="confidentialite.html">Confidentialité</a></li>
+    <li><a href="conditions.html">Conditions d'utilisation</a></li>
+    <li><a href="licences-tierces.html">Licences tierces</a></li>
+  </ul>
+</div></footer>
+</body>
+</html>
