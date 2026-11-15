@@ -3,7 +3,7 @@ const STORE = {
   checkoutUrl: "https://discord.com/users/1456994725566353485",   // le paiement se fait sur Discord, en message privé
   currency: "€",
   plans: [
-    { id: "essai", name: "Essai", tag: "3 jours", price: 0, blurb: "Découvre l'île, sans engagement.", perks: ["Île, overlay, réticule, outils", "Une fois par PC", "Sans carte bancaire"], cta: "Télécharger l'essai", url: "https://github.com/sonlikehisfather/dynamic-island-releases/releases/latest/download/DynamicIsland-win-Setup.exe" },
+    { id: "essai", name: "Essai", tag: "7 jours", price: 0, blurb: "Découvre l'île, sans engagement.", perks: ["Île, overlay, réticule, outils", "Une fois par PC", "Sans carte bancaire"], cta: "Télécharger l'essai", url: "https://github.com/sonlikehisfather/dynamic-island-releases/releases/latest/download/DynamicIsland-win-Setup.exe" },
     { id: "an", name: "1 an", tag: "12 mois", price: 8, blurb: "Tout débloqué pendant un an.", perks: ["Assistant IA et instant replay", "Studio de capture, scènes, stream", "Mises à jour pendant un an"], cta: "Payer sur Discord" },
     { id: "perso", name: "À vie", tag: "Une fois", price: 15, blurb: "Une clé, une fois, pour toujours.", perks: ["Assistant IA et instant replay", "Studio de capture, scènes, stream", "Boost auto et mises à jour"], featured: true, cta: "Payer sur Discord" },
     { id: "pro", name: "Famille", tag: "Une fois", price: 29, blurb: "Pour toute la maison.", perks: ["Jusqu'à 3 PC", "Mises à jour incluses", "Support prioritaire"], pcs: 3, cta: "Payer sur Discord" }

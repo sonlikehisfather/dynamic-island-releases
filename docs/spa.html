@@ -448,7 +448,7 @@ function Hero({ go }) {
       </motion.p>
 
       <motion.div initial={reduce ? false : { opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, ease: EASE, delay: 1.1 }} className="mt-10 flex flex-wrap justify-center gap-3">
-        <motion.a whileHover={{ y: -2 }} whileTap={{ scale: .97 }} href={DL} className="rounded-full bg-white px-7 py-3.5 font-semibold text-black">Essayer 3 jours gratuits</motion.a>
+        <motion.a whileHover={{ y: -2 }} whileTap={{ scale: .97 }} href={DL} className="rounded-full bg-white px-7 py-3.5 font-semibold text-black">Essayer 7 jours gratuits</motion.a>
         <motion.button whileHover={{ y: -2 }} whileTap={{ scale: .97 }} onClick={() => go("configurer")} className="line rounded-full border px-7 py-3.5 font-semibold">Voir les formules</motion.button>
       </motion.div>
 
@@ -474,7 +474,7 @@ function Counter({ to, suffix = "", decimals = 0 }) {
   return <span ref={ref} className="tnum">{v.toFixed(decimals)}{suffix}</span>;
 }
 const STATS = [
-  { to: 3, suffix: " jours", label: "d'essai gratuit", note: "sans carte bancaire" },
+  { to: 7, suffix: " jours", label: "d'essai gratuit", note: "sans carte bancaire" },
   { to: 150, suffix: " Mo", label: "de mémoire environ", note: "en veille en jeu" },
   { to: 0, suffix: " pub", label: "jamais", note: "ni pistage" },
   { to: 16, suffix: "", label: "pages de réglages", note: "tout s'applique en direct" },
@@ -559,7 +559,7 @@ function Bento() {
 /* ───────────── 4. Comparatif (barres animées) ───────────── */
 const FEATURE_ROWS = ["Île, musique, stats, notifications", "Overlay, réticule, outils", "Assistant IA", "Studio de capture", "Instant replay", "Boost auto des jeux"];
 const COMPARE = [
-  { name: "Essai", sub: "3 jours, gratuit", features: 2, pcs: 1, color: "rgba(255,255,255,.35)" },
+  { name: "Essai", sub: "7 jours, gratuit", features: 2, pcs: 1, color: "rgba(255,255,255,.35)" },
   { name: "1 an", sub: "8 € pour un an", features: 6, pcs: 1, color: "linear-gradient(90deg,var(--violet),var(--pink))" },
   { name: "À vie", sub: "15 € une fois", features: 6, pcs: 1, color: "linear-gradient(90deg,var(--violet),var(--cyan))" },
   { name: "Famille", sub: "29 € une fois", features: 6, pcs: 3, color: "linear-gradient(90deg,var(--cyan),var(--pink))" },
@@ -829,7 +829,7 @@ const FAQS = [
   { q: "Sur quels Windows ça marche ?", a: "Windows 10 (version 2004 ou plus récente) et Windows 11. L'installateur ajoute .NET 8 tout seul si ton PC ne l'a pas." },
   { q: "C'est sans danger avec les jeux et les anti-triche ?", a: "L'overlay et le réticule sont de simples fenêtres posées par-dessus l'écran. Rien n'est injecté dans les jeux, comme la Xbox Game Bar." },
   { q: "Que fait l'appli de mes données ?", a: "L'essentiel reste sur ton PC. Ce qui peut en sortir (licence, mises à jour, paroles, assistant IA) est détaillé dans la politique de confidentialité. Aucune publicité, aucun outil d'analyse." },
-  { q: "L'essai gratuit peut-il être refait ?", a: "Non. L'essai dure 3 jours et n'est accordé qu'une fois par PC : réinstaller l'appli ne donne pas un nouvel essai." },
+  { q: "L'essai gratuit peut-il être refait ?", a: "Non. L'essai dure 7 jours et n'est accordé qu'une fois par PC : réinstaller l'appli ne donne pas un nouvel essai." },
 ];
 function Faq() {
   const [open, setOpen] = useState(0);
@@ -1099,7 +1099,7 @@ function Manifesto() {
 
 const TIMELINE = [
   { v: "1.6", title: "L'île devient un outil de jeu", text: "Premier réticule au centre de l'écran, comportement en plein écran, halo aux couleurs de la musique, mises à jour automatiques." },
-  { v: "1.8", title: "L'Optimiseur arrive", text: "Analyse du PC, nettoyage des caches, maintenance automatique au repos, et l'essai gratuit de 3 jours." },
+  { v: "1.8", title: "L'Optimiseur arrive", text: "Analyse du PC, nettoyage des caches, maintenance automatique au repos, et un essai gratuit." },
   { v: "1.9", title: "Une île pour toute la journée", text: "Onglet Aujourd'hui avec météo et agenda, Pomodoro, notes rapides, mode streamer et capture annotée." },
   { v: "Nov. 2026", title: "Première version publique", text: "Le projet sort en public le 9 novembre 2026, avec son site, ses licences et un nouveau design en cours." },
 ];
