@@ -1,0 +1,1393 @@
+<title>Dynamic Island Web</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap">
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script>tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'SF Pro Display', 'system-ui', 'sans-serif'] } } } };</script>
+<style>
+/* Mise en page : SPA sombre, sections denses en colonnes ; nav en verre flottante, footer en 4 colonnes. */
+:root {
+  color-scheme: dark;
+  --bg: #000000;
+  --panel: #0B0B0F;
+  --fg: #F5F5F7;
+  --muted: #8E8E99;
+  --line: rgba(255,255,255,.10);
+  --violet: #7C5CFF;
+  --cyan: #22D3EE;
+  --pink: #FF4FD8;
+  --green: #30D158;
+}
+html, body { background: var(--bg); color: var(--fg); }
+body { font-family: 'Inter', 'SF Pro Display', system-ui, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 60; background: var(--bg); }
+.gutter { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { text-wrap: balance; letter-spacing: -0.04em; }
+.muted { color: var(--muted); }
+.line { border-color: var(--line); }
+.grad { background: linear-gradient(100deg, var(--violet), var(--cyan) 55%, var(--pink)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.glass { background: rgba(20,20,26,.55); border: 1px solid var(--line); backdrop-filter: blur(20px) saturate(170%); -webkit-backdrop-filter: blur(20px) saturate(170%); }
+.panel { background: var(--panel); border: 1px solid var(--line); }
+.chip { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.tnum { font-variant-numeric: tabular-nums; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; border-radius: 10px; }
+.bento-card { --x: 50%; --y: 50%; }
+.bento-card .spot { background: radial-gradient(380px circle at var(--x) var(--y), rgba(124,92,255,.18), transparent 60%); }
+.eq i { display: block; width: 3px; border-radius: 2px; background: var(--cyan); animation: eq 1s ease-in-out infinite alternate; }
+.eq i:nth-child(2) { animation-delay: .25s } .eq i:nth-child(3) { animation-delay: .5s } .eq i:nth-child(4) { animation-delay: .15s }
+@keyframes eq { from { height: 4px } to { height: 18px } }
+.frame { border-radius: 24px; overflow: hidden; border: 1px solid var(--line); background: var(--panel); max-width: 100%; }
+.frame img { display: block; width: 100%; height: auto; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+
+<div id="root"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/framer-motion@10.16.4/dist/framer-motion.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef } = React;
+
+// Framer Motion (avec repli sans animation si la librairie ne charge pas)
+const FM = window.Motion || {};
+const passthrough = new Proxy({}, { get: (_, tag) => React.forwardRef(({ initial, animate, exit, whileHover, whileTap, whileInView, viewport, transition, variants, layout, layoutId, ...p }, ref) => React.createElement(tag, { ...p, ref })) });
+const motion = FM.motion || passthrough;
+const AnimatePresence = FM.AnimatePresence || (({ children }) => children);
+const useInView = FM.useInView || (() => true);
+const useScroll = FM.useScroll;
+const useTransform = FM.useTransform;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const EASE = [0.16, 1, 0.3, 1];
+const DL = "https://github.com/sonlikehisfather/dynamic-island-releases/releases/latest/download/DynamicIsland-win-Setup.exe";
+// Serveur (Cloudflare Worker) des comptes et de la messagerie : même adresse que le serveur de licences de l'appli (src/Core/LicenseServer.cs)
+const API = "https://dynamic-island-licenses.dynamic-island-licenses.workers.dev";
+const PAGES = [
+  { id: "accueil", label: "Accueil" },
+  { id: "technologie", label: "Technologie" },
+  { id: "configurer", label: "Configurer" },
+  { id: "apropos", label: "À propos" },
+];
+
+/* ───────────── Icônes (traits simples) ───────────── */
+const Icon = ({ d, className = "h-6 w-6" }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+    {d.map((p, i) => <path key={i} d={p} />)}
+  </svg>
+);
+const I = {
+  music: ["M9 18V5l12-2v13", "M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z", "M21 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"],
+  bell: ["M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9", "M10.3 21a1.94 1.94 0 0 0 3.4 0"],
+  game: ["M6 12h4M8 10v4", "M15 13h.01M18 11h.01", "M17.3 5H6.7a4 4 0 0 0-3.9 3.2L2 15a3 3 0 0 0 5.4 2.3L9 15h6l1.6 2.3A3 3 0 0 0 22 15l-.8-6.8A4 4 0 0 0 17.3 5Z"],
+  camera: ["M23 7l-7 5 7 5V7Z", "M1 5h15v14H1z"],
+  spark: ["M12 3v4M12 17v4M3 12h4M17 12h4", "M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"],
+  bolt: ["M13 2 3 14h9l-1 8 10-12h-9l1-8Z"],
+  arrow: ["M5 12h14", "M13 5l7 7-7 7"],
+  menu: ["M4 7h16M4 12h16M4 17h16"],
+  close: ["M6 6l12 12M18 6 6 18"],
+};
+
+/* ───────────── Compte : session, appels authentifiés, fenêtre de connexion ───────────── */
+const TOKEN_KEY = "di-session";
+const readToken = () => { try { return localStorage.getItem(TOKEN_KEY) || ""; } catch { return ""; } };
+const writeToken = t => { try { t ? localStorage.setItem(TOKEN_KEY, t) : localStorage.removeItem(TOKEN_KEY); } catch { /* stockage indisponible : session limitée à l'onglet */ } };
+const AuthCtx = React.createContext(null);
+const useAuth = () => React.useContext(AuthCtx);
+class ApiErr extends Error { constructor(m, status, data) { super(m); this.status = status; this.data = data; } }
+async function apiCall(path, { method = "GET", body, token } = {}) {
+  let r;
+  try {
+    r = await fetch(API + path, { method, credentials: "omit", cache: "no-store",
+      headers: { ...(body !== undefined ? { "content-type": "application/json" } : {}), ...(token ? { authorization: "Bearer " + token } : {}) },
+      body: body === undefined ? undefined : JSON.stringify(body) });
+  } catch { throw new ApiErr("Serveur injoignable. Vérifie ta connexion.", 0); }
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new ApiErr(r.status === 429 ? (d.error || "Trop de tentatives, réessaie plus tard.") : (d.error || "Erreur " + r.status), r.status, d);
+  return d;
+}
+
+function AuthProvider({ children }) {
+  const [token, setToken] = useState(readToken);
+  const [user, setUser] = useState(null);      // { username, mustChange, unread }
+  const [modal, setModal] = useState(null);    // null | "login" | "register" | "password"
+  const logout = (silent) => {
+    const t = token;
+    writeToken(""); setToken(""); setUser(null);
+    if (t && !silent) apiCall("/v1/account/logout", { method: "POST", body: {}, token: t }).catch(() => {});
+  };
+  // Appel authentifié : un 401 (session expirée ou révoquée) déconnecte
+  const call = async (path, o = {}) => {
+    try { return await apiCall(path, { ...o, token }); }
+    catch (e) {
+      if (e.status === 401) logout(true);
+      if (e.status === 403 && e.data && e.data.mustChange) { setUser(u => u && { ...u, mustChange: true }); setModal("password"); }
+      throw e;
+    }
+  };
+  const refresh = async () => {
+    if (!token) return;
+    try { const me = await call("/v1/account/me"); setUser(me); if (me.mustChange) setModal("password"); } catch { /* 401 géré */ }
+  };
+  useEffect(() => {
+    refresh();
+    if (!token) return;
+    const t = setInterval(() => { if (!document.hidden) refresh(); }, 60000);   // pastille « non lu » à jour
+    return () => clearInterval(t);
+  }, [token]);
+  const signIn = (t, u) => { writeToken(t); setToken(t); setUser({ username: u.username, mustChange: u.mustChange, unread: 0 }); setModal(u.mustChange ? "password" : null); };
+  const setUnread = n => setUser(u => u && { ...u, unread: n });
+  const value = { token, user, modal, setModal, logout, call, signIn, refresh, setUnread };
+  return <AuthCtx.Provider value={value}>{children}<AuthModal /></AuthCtx.Provider>;
+}
+
+function strength(p) {
+  let s = 0;
+  if (p.length >= 10) s++;
+  if (p.length >= 14) s++;
+  if (/[a-z]/.test(p) && /[A-Z]/.test(p)) s++;
+  if (/\d/.test(p)) s++;
+  if (/[^A-Za-z0-9]/.test(p)) s++;
+  return Math.min(4, s);
+}
+const STRENGTH = [["Trop faible", "#FF453A"], ["Faible", "#FF9F0A"], ["Moyen", "#FFD60A"], ["Bon", "#30D158"], ["Excellent", "#22D3EE"]];
+const RESERVED_NAMES = ["admin", "administrateur", "administrator", "root", "support", "moderator", "moderateur", "system", "dynamicisland", "staff"];
+
+function PassInput({ id, label, value, onChange, error, autoComplete }) {
+  const [show, setShow] = useState(false);
+  return (
+    <div>
+      <label htmlFor={id} className="muted mb-1.5 block text-sm">{label}</label>
+      <div className="relative">
+        <input id={id} type={show ? "text" : "password"} value={value} onChange={e => onChange(e.target.value)} autoComplete={autoComplete} maxLength={128} aria-invalid={!!error}
+          className="w-full rounded-2xl border bg-white/[.03] px-4 py-3 pr-24 outline-none transition-colors" style={{ borderColor: error ? '#FF453A' : 'var(--line)' }} />
+        <button type="button" onClick={() => setShow(s => !s)} className="muted absolute right-2 top-1/2 -translate-y-1/2 rounded-full px-3 py-1.5 text-xs hover:text-white" aria-pressed={show} aria-label={show ? "Masquer le mot de passe" : "Afficher le mot de passe"}>{show ? "Masquer" : "Afficher"}</button>
+      </div>
+      {error && <p className="mt-1.5 text-sm" style={{ color: '#FF453A' }}>{error}</p>}
+    </div>
+  );
+}
+
+function AuthModal() {
+  const a = useAuth();
+  const mode = a.modal;
+  const [f, setF] = useState({ username: "", password: "", confirm: "", old: "" });
+  const [err, setErr] = useState({});
+  const [fail, setFail] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState("");
+  const hp = useRef(null);
+  const forced = mode === "password" && !!(a.user && a.user.mustChange);
+  useEffect(() => { setErr({}); setFail(""); setDone(""); setF(x => ({ ...x, password: "", confirm: "", old: "" })); }, [mode]);
+  useEffect(() => {
+    if (!mode) return;
+    const k = e => { if (e.key === "Escape" && !forced) a.setModal(null); };
+    window.addEventListener("keydown", k); return () => window.removeEventListener("keydown", k);
+  }, [mode, forced]);
+  const set = k => v => { setF(x => ({ ...x, [k]: v })); setErr(e => ({ ...e, [k]: undefined })); setFail(""); };
+  const close = () => { if (!forced) a.setModal(null); };
+
+  const submit = async e => {
+    e.preventDefault();
+    if (busy) return;
+    const n = {}, u = f.username.trim();
+    if (mode !== "password") {
+      if (!/^[A-Za-z0-9_.-]{3,20}$/.test(u)) n.username = "3 à 20 caractères : lettres, chiffres, _ . -";
+      else if (mode === "register" && RESERVED_NAMES.includes(u.toLowerCase().replace(/[_.-]/g, ""))) n.username = "Ce nom est réservé.";
+    }
+    if (mode === "password" && !f.old) n.old = "Indique ton mot de passe actuel.";
+    if (mode === "login") { if (!f.password) n.password = "Indique ton mot de passe."; }
+    else {
+      const name = mode === "password" ? (a.user ? a.user.username : "") : u;
+      if (f.password.length < 10) n.password = "10 caractères minimum.";
+      else if (f.password.toLowerCase() === name.toLowerCase()) n.password = "Ne réutilise pas ton nom d'utilisateur.";
+      if (f.confirm !== f.password) n.confirm = "Les deux mots de passe ne correspondent pas.";
+    }
+    setErr(n);
+    if (Object.keys(n).length) return;
+    setBusy(true); setFail("");
+    try {
+      if (mode === "password") {
+        await a.call("/v1/account/password", { method: "POST", body: { old: f.old, new: f.password } });
+        await a.refresh();
+        setDone("Mot de passe changé. Tes autres appareils ont été déconnectés.");
+        setTimeout(() => a.setModal(null), 1600);
+      } else {
+        if (mode === "register") await apiCall("/v1/account/register", { method: "POST", body: { username: u, password: f.password, website: hp.current ? hp.current.value : "" } });
+        const r = await apiCall("/v1/account/login", { method: "POST", body: { username: u, password: f.password } });
+        a.signIn(r.token, r);
+      }
+    } catch (x) {
+      const m = String(x.message || "");
+      setFail(m && m.length < 160 ? m.charAt(0).toUpperCase() + m.slice(1) : "Une erreur est survenue.");
+    } finally { setBusy(false); }
+  };
+
+  const st = strength(f.password);
+  return (
+    <AnimatePresence>
+      {mode && (
+        <motion.div key="auth" className="fixed inset-0 z-[80] grid place-items-center p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: .25 }}>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={close} aria-hidden="true" />
+          <motion.div role="dialog" aria-modal="true" aria-labelledby="auth-title" className="glass relative w-full max-w-md rounded-[32px] p-6 md:p-8"
+            initial={{ opacity: 0, y: 30, scale: .96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 20, scale: .96 }} transition={{ duration: .4, ease: EASE }}>
+            {!forced && <button onClick={close} className="muted absolute right-4 top-4 rounded-full p-2 hover:text-white" aria-label="Fermer"><Icon d={I.close} className="h-5 w-5" /></button>}
+            {mode === "password" ? (
+              <h2 id="auth-title" className="pr-10 text-2xl font-bold">{forced ? "Choisis un nouveau mot de passe" : "Changer le mot de passe"}</h2>
+            ) : (
+              <div className="relative mr-10 grid grid-cols-2 rounded-full bg-white/5 p-1" role="tablist" id="auth-title" aria-label="Compte">
+                {[["login", "Se connecter"], ["register", "Créer un compte"]].map(([m, l]) => (
+                  <button key={m} type="button" role="tab" aria-selected={mode === m} onClick={() => a.setModal(m)} className={"relative rounded-full py-2.5 text-sm font-semibold transition-colors " + (mode === m ? "text-black" : "muted hover:text-white")}>
+                    {mode === m && <motion.span layoutId="authtab" className="absolute inset-0 rounded-full bg-white" transition={{ type: "spring", stiffness: 400, damping: 32 }} />}
+                    <span className="relative">{l}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            {forced && <p className="muted mt-2 text-sm">Ton mot de passe a été réinitialisé par l'admin. Saisis le mot de passe temporaire reçu, puis choisis le tien.</p>}
+            <form onSubmit={submit} noValidate className="mt-6 grid gap-4">
+              {mode !== "password" && (
+                <div>
+                  <label htmlFor="a-user" className="muted mb-1.5 block text-sm">Nom d'utilisateur</label>
+                  <input id="a-user" value={f.username} onChange={e => set("username")(e.target.value)} autoComplete="username" maxLength={20} aria-invalid={!!err.username} autoFocus
+                    className="w-full rounded-2xl border bg-white/[.03] px-4 py-3 outline-none transition-colors" style={{ borderColor: err.username ? '#FF453A' : 'var(--line)' }} />
+                  {err.username && <p className="mt-1.5 text-sm" style={{ color: '#FF453A' }}>{err.username}</p>}
+                </div>
+              )}
+              {mode === "password" && <PassInput id="a-old" label={forced ? "Mot de passe temporaire" : "Mot de passe actuel"} value={f.old} onChange={set("old")} error={err.old} autoComplete="current-password" />}
+              <PassInput id="a-pass" label={mode === "password" ? "Nouveau mot de passe" : "Mot de passe"} value={f.password} onChange={set("password")} error={err.password} autoComplete={mode === "login" ? "current-password" : "new-password"} />
+              {mode !== "login" && (
+                <>
+                  <div aria-live="polite">
+                    <div className="grid grid-cols-4 gap-1.5">{[0, 1, 2, 3].map(i => <motion.span key={i} className="h-1.5 rounded-full" animate={{ backgroundColor: f.password && i < Math.max(1, st) ? STRENGTH[st][1] : 'rgba(255,255,255,0.1)' }} />)}</div>
+                    <p className="muted mt-1.5 text-xs">{f.password ? "Robustesse : " + STRENGTH[st][0] + ". " : ""}10 caractères minimum ; une phrase de plusieurs mots est idéale.</p>
+                  </div>
+                  <PassInput id="a-conf" label="Confirme le mot de passe" value={f.confirm} onChange={set("confirm")} error={err.confirm} autoComplete="new-password" />
+                </>
+              )}
+              {mode === "register" && (
+                <div aria-hidden="true" style={{ position: "absolute", left: "-10000px", width: 1, height: 1, overflow: "hidden" }}>
+                  <label htmlFor="a-website">Site web (laisser vide)</label>
+                  <input ref={hp} id="a-website" name="website" type="text" tabIndex={-1} autoComplete="off" defaultValue="" />
+                </div>
+              )}
+              {fail && <p role="alert" className="text-sm" style={{ color: '#ff6b6b' }}>{fail}</p>}
+              {done && <p role="status" className="text-sm" style={{ color: '#30D158' }}>{done}</p>}
+              <motion.button whileHover={{ y: -2 }} whileTap={{ scale: .97 }} type="submit" disabled={busy} aria-busy={busy} className="mt-1 rounded-full bg-white py-3.5 font-semibold text-black disabled:opacity-60">
+                {busy ? "Un instant…" : mode === "login" ? "Se connecter" : mode === "register" ? "Créer mon compte" : "Changer le mot de passe"}
+              </motion.button>
+              {mode === "login" && <p className="muted text-center text-xs">Mot de passe oublié ? Écris-moi sur Discord : je te donnerai un mot de passe temporaire.</p>}
+              {forced && <button type="button" onClick={() => { a.setModal(null); a.logout(); }} className="muted text-sm hover:text-white">Se déconnecter</button>}
+            </form>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+function AccountButton({ go, onNav }) {
+  const a = useAuth();
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!open) return;
+    const f = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const k = e => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("pointerdown", f); window.addEventListener("keydown", k);
+    return () => { document.removeEventListener("pointerdown", f); window.removeEventListener("keydown", k); };
+  }, [open]);
+  if (!a.user) return <button onClick={() => a.setModal("login")} className="muted rounded-full px-3 py-2 text-sm font-semibold hover:text-white">Connexion</button>;
+  const n = a.user.unread || 0;
+  const item = (label, fn) => <button role="menuitem" onClick={() => { setOpen(false); if (onNav) onNav(); fn(); }} className="block w-full rounded-2xl px-4 py-2.5 text-left text-sm hover:bg-white/10">{label}</button>;
+  return (
+    <div className="relative" ref={ref}>
+      <button onClick={() => setOpen(o => !o)} aria-haspopup="menu" aria-expanded={open} className="relative flex items-center gap-2 rounded-full bg-white/5 py-1 pl-1 pr-3 text-sm hover:bg-white/10"
+        aria-label={"Compte " + a.user.username + (n ? ", " + n + " message" + (n > 1 ? "s" : "") + " non lu" + (n > 1 ? "s" : "") : "")}>
+        <span className="grid h-7 w-7 place-items-center rounded-full text-xs font-bold text-white" style={{ background: 'linear-gradient(135deg,var(--violet),var(--cyan))' }}>{a.user.username.charAt(0).toUpperCase()}</span>
+        <span className="hidden max-w-[110px] truncate sm:inline">{a.user.username}</span>
+        {n > 0 && <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute -right-1 -top-1 grid h-5 min-w-[20px] place-items-center rounded-full px-1 text-[11px] font-bold text-white" style={{ background: '#FF453A' }}>{n > 9 ? "9+" : n}</motion.span>}
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div role="menu" initial={{ opacity: 0, y: -6, scale: .97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6, scale: .97 }} transition={{ duration: .2, ease: EASE }}
+            className="glass absolute right-0 mt-2 w-60 rounded-3xl p-2">
+            {item("Messages" + (n ? " (" + n + ")" : ""), () => go("apropos", "contact"))}
+            {item("Changer le mot de passe", () => a.setModal("password"))}
+            {item("Se déconnecter", () => a.logout())}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/* ───────────── Navigation ───────────── */
+function Nav({ page, go }) {
+  const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const f = () => setScrolled(window.scrollY > 20);
+    f(); window.addEventListener('scroll', f, { passive: true });
+    return () => window.removeEventListener('scroll', f);
+  }, []);
+  const nav = id => { setOpen(false); go(id); };
+  return (
+    <header className="fixed inset-x-0 z-50 gutter" style={{ top: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}>
+      <motion.nav
+        initial={reduce ? false : { y: -40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1, ease: EASE, delay: .2 }}
+        className={"glass mx-auto flex max-w-5xl items-center justify-between rounded-full py-2 pl-5 pr-2 transition-shadow " + (scrolled ? "shadow-[0_10px_40px_rgba(0,0,0,.6)]" : "")}
+        aria-label="Navigation principale">
+        <button onClick={() => nav("accueil")} className="flex items-center gap-2 font-semibold tracking-tight">
+          <span className="inline-block h-3 w-7 rounded-full" style={{ background: 'linear-gradient(90deg,var(--violet),var(--cyan))' }} />
+          Dynamic Island
+        </button>
+        <div className="relative hidden items-center gap-1 md:flex">
+          {PAGES.map(p => (
+            <button key={p.id} onClick={() => nav(p.id)} className={"relative rounded-full px-4 py-2 text-sm transition-colors " + (page === p.id ? "text-white" : "muted hover:text-white")}>
+              {page === p.id && <motion.span layoutId="navpill" className="absolute inset-0 rounded-full bg-white/10" transition={{ type: "spring", stiffness: 400, damping: 32 }} />}
+              <span className="relative">{p.label}</span>
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2">
+          <AccountButton go={go} onNav={() => setOpen(false)} />
+          <a href={DL} className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-black transition-transform hover:-translate-y-0.5">Télécharger</a>
+          <button className="rounded-full p-2 md:hidden" onClick={() => setOpen(o => !o)} aria-expanded={open} aria-label="Menu">
+            <Icon d={open ? I.close : I.menu} className="h-5 w-5" />
+          </button>
+        </div>
+      </motion.nav>
+      <AnimatePresence>
+        {open && (
+          <motion.div initial={{ opacity: 0, y: -10, scale: .98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -10, scale: .98 }} transition={{ duration: .35, ease: EASE }}
+            className="glass mx-auto mt-2 max-w-5xl rounded-3xl p-2 md:hidden">
+            {PAGES.map(p => (
+              <button key={p.id} onClick={() => nav(p.id)} className={"block w-full rounded-2xl px-4 py-3 text-left " + (page === p.id ? "bg-white/10" : "")}>{p.label}</button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </header>
+  );
+}
+
+/* ───────────── Accueil : 1. Hero ───────────── */
+const ISLAND_STATES = [
+  { w: 140, h: 38, k: "repos" },
+  { w: 300, h: 56, k: "musique" },
+  { w: 340, h: 56, k: "notif" },
+  { w: 260, h: 56, k: "charge" },
+];
+function IslandDemo() {
+  const [i, setI] = useState(1);
+  useEffect(() => { if (reduce) return; const t = setInterval(() => setI(v => (v + 1) % ISLAND_STATES.length), 2600); return () => clearInterval(t); }, []);
+  const s = ISLAND_STATES[i];
+  return (
+    <motion.div animate={{ width: s.w, height: s.h }} transition={{ type: "spring", stiffness: 260, damping: 22 }}
+      className="relative mx-auto overflow-hidden rounded-full bg-black shadow-[0_0_0_1px_rgba(255,255,255,.08),0_30px_80px_rgba(0,0,0,.9)]"
+      style={{ width: s.w, height: s.h }} aria-label="Démonstration de l'île">
+      <AnimatePresence mode="wait">
+        <motion.div key={s.k} initial={{ opacity: 0, filter: "blur(6px)", scale: .9 }} animate={{ opacity: 1, filter: "blur(0px)", scale: 1 }} exit={{ opacity: 0, filter: "blur(6px)", scale: .9 }} transition={{ duration: .35, ease: EASE }}
+          className="absolute inset-0 flex items-center gap-3 px-2.5 text-left">
+          {s.k === "repos" && <div className="mx-auto flex items-center gap-2 text-xs muted tnum"><span className="h-2 w-2 rounded-full" style={{ background: 'var(--green)' }} />14:36</div>}
+          {s.k === "musique" && <>
+            <div className="h-10 w-10 flex-none rounded-xl" style={{ background: 'linear-gradient(135deg,var(--pink),var(--violet) 60%,var(--cyan))' }} />
+            <div className="min-w-0 flex-1"><div className="truncate text-sm font-semibold">Sur Paname</div><div className="truncate text-xs muted">PNL</div></div>
+            <div className="eq mr-3 flex h-[18px] items-end gap-[3px]" aria-hidden="true"><i /><i /><i /><i /></div>
+          </>}
+          {s.k === "notif" && <>
+            <div className="grid h-10 w-10 flex-none place-items-center rounded-full" style={{ background: '#5865F2' }}><Icon d={I.bell} className="h-5 w-5" /></div>
+            <div className="min-w-0 flex-1"><div className="truncate text-sm font-semibold">Discord</div><div className="truncate text-xs muted">Nouveau message dans #général</div></div>
+          </>}
+          {s.k === "charge" && <>
+            <div className="grid h-10 w-10 flex-none place-items-center rounded-full" style={{ color: 'var(--green)' }}><Icon d={I.bolt} className="h-5 w-5" /></div>
+            <div className="min-w-0 flex-1 text-sm font-semibold">Chargeur branché</div>
+            <div className="mr-3 text-sm font-semibold tnum" style={{ color: 'var(--green)' }}>82 %</div>
+          </>}
+        </motion.div>
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+function Hero({ go }) {
+  const words1 = ["L'île", "qui", "vit"];
+  const words2 = ["en haut", "de ton écran."];
+  const word = {
+    hidden: { y: "110%", rotate: 6, opacity: 0 },
+    show: i => ({ y: "0%", rotate: 0, opacity: 1, transition: { duration: 1.2, ease: EASE, delay: .35 + i * .08 } }),
+  };
+  return (
+    <section className="gutter relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden pb-16 pt-32 text-center">
+      {/* Halos */}
+      <motion.div aria-hidden="true" className="pointer-events-none absolute -left-40 top-0 h-[60vmin] w-[60vmin] rounded-full blur-[100px]" style={{ background: 'var(--violet)', opacity: .35 }}
+        animate={reduce ? {} : { x: [0, 60, 0], y: [0, 40, 0] }} transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }} />
+      <motion.div aria-hidden="true" className="pointer-events-none absolute -right-40 top-1/3 h-[55vmin] w-[55vmin] rounded-full blur-[110px]" style={{ background: 'var(--cyan)', opacity: .22 }}
+        animate={reduce ? {} : { x: [0, -50, 0], y: [0, -30, 0] }} transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }} />
+
+      <motion.div initial={reduce ? false : { opacity: 0, scale: .6, y: -30 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: "spring", stiffness: 180, damping: 18, delay: .1 }} className="mb-10">
+        <IslandDemo />
+      </motion.div>
+
+      <motion.p initial={reduce ? false : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, ease: EASE, delay: .25 }} className="chip mb-6">Pour Windows 10 et 11</motion.p>
+
+      <h1 className="max-w-5xl text-[clamp(2.8rem,9.5vw,8rem)] font-extrabold leading-[.92]">
+        {[...words1, null, ...words2].map((w, i) => w === null ? <br key={i} /> : (
+          <span key={i} className="inline-block overflow-hidden pb-[.08em] align-bottom">
+            <motion.span className={"inline-block " + (i > 3 ? "grad" : "")} custom={i} variants={word} initial={reduce ? false : "hidden"} animate="show">{w}&nbsp;</motion.span>
+          </span>
+        ))}
+      </h1>
+
+      <motion.p initial={reduce ? false : { opacity: 0, y: 24, filter: "blur(8px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} transition={{ duration: 1.2, ease: EASE, delay: .9 }}
+        className="muted mt-8 max-w-xl text-lg leading-relaxed md:text-xl">
+        Musique, notifications, stats, captures et replay dans une pilule qui s'ouvre quand tu en as besoin et disparaît le reste du temps.
+      </motion.p>
+
+      <motion.div initial={reduce ? false : { opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, ease: EASE, delay: 1.1 }} className="mt-10 flex flex-wrap justify-center gap-3">
+        <motion.a whileHover={{ y: -2 }} whileTap={{ scale: .97 }} href={DL} className="rounded-full bg-white px-7 py-3.5 font-semibold text-black">Essayer 3 jours gratuits</motion.a>
+        <motion.button whileHover={{ y: -2 }} whileTap={{ scale: .97 }} onClick={() => go("configurer")} className="line rounded-full border px-7 py-3.5 font-semibold">Voir les formules</motion.button>
+      </motion.div>
+
+      <motion.div initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.8 }} className="muted mt-16 flex items-center gap-2 text-xs">
+        <motion.span animate={reduce ? {} : { y: [0, 6, 0] }} transition={{ duration: 1.6, repeat: Infinity }}>↓</motion.span> Fais défiler
+      </motion.div>
+    </section>
+  );
+}
+
+/* ───────────── 2. Chiffres clés ───────────── */
+function Counter({ to, suffix = "", decimals = 0 }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-80px" });
+  const [v, setV] = useState(reduce ? to : 0);
+  useEffect(() => {
+    if (!inView || reduce) { setV(to); return; }
+    let raf, t0;
+    const step = t => { t0 ??= t; const p = Math.min(1, (t - t0) / 1800); setV(to * (1 - Math.pow(1 - p, 4))); if (p < 1) raf = requestAnimationFrame(step); };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [inView, to]);
+  return <span ref={ref} className="tnum">{v.toFixed(decimals)}{suffix}</span>;
+}
+const STATS = [
+  { to: 3, suffix: " jours", label: "d'essai gratuit", note: "sans carte bancaire" },
+  { to: 150, suffix: " Mo", label: "de mémoire environ", note: "en veille en jeu" },
+  { to: 0, suffix: " pub", label: "jamais", note: "ni pistage" },
+  { to: 16, suffix: "", label: "pages de réglages", note: "tout s'applique en direct" },
+];
+function Stats() {
+  return (
+    <section className="gutter py-28">
+      <div className="mx-auto max-w-6xl">
+        <Reveal><p className="chip">En chiffres</p></Reveal>
+        <Reveal delay={.05}><h2 className="mt-3 max-w-3xl text-[clamp(2.2rem,5vw,4rem)] font-bold leading-[1]">Puissante. <span className="muted">Et pourtant légère.</span></h2></Reveal>
+        <div className="mt-14 grid grid-cols-2 gap-px overflow-hidden rounded-3xl line border lg:grid-cols-4" style={{ background: 'var(--line)' }}>
+          {STATS.map((s, i) => (
+            <Reveal key={s.label} delay={i * .08} className="flex flex-col gap-2 p-6 md:p-8" style={{ background: 'var(--bg)' }}>
+              <div className="text-[clamp(2.2rem,5vw,3.8rem)] font-extrabold leading-none tracking-tight"><Counter to={s.to} suffix={s.suffix} /></div>
+              <div className="font-medium">{s.label}</div>
+              <div className="muted text-sm">{s.note}</div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ───────────── Utilitaire : apparition au scroll ───────────── */
+function Reveal({ children, delay = 0, className = "", style }) {
+  return (
+    <motion.div className={className} style={style}
+      initial={reduce ? false : { opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }} transition={{ duration: 1.1, ease: EASE, delay }}>
+      {children}
+    </motion.div>
+  );
+}
+
+/* ───────────── 3. Bento ───────────── */
+const FEATURES = [
+  { icon: I.music, title: "Musique", text: "Pochette, paroles, contrôles et égaliseur. Spotify, YouTube, Deezer et tout ce que Windows reconnaît.", tag: "Toujours là", span: "md:col-span-4 md:row-span-2", img: "assets/img/app-musique.webp", hue: "var(--pink)" },
+  { icon: I.bell, title: "Notifications", text: "Les alertes de Windows arrivent dans l'île, animées, sans couvrir ce que tu fais.", tag: "Discrètes", span: "md:col-span-2", hue: "var(--violet)" },
+  { icon: I.game, title: "Jeux", text: "Overlay FPS, CPU, GPU et ping, réticule personnalisé et mode jeu qui met l'île en veille.", tag: "Overlay", span: "md:col-span-2", hue: "var(--green)" },
+  { icon: I.camera, title: "Capture et replay", text: "Captures, enregistrement d'écran et les 30 dernières secondes sauvegardées d'un raccourci.", tag: "Licence", span: "md:col-span-3", hue: "var(--cyan)" },
+  { icon: I.spark, title: "Assistant IA", text: "Demande en français : un minuteur, couper les notifs, résumer ce qui est copié. Ctrl + Maj + Espace.", tag: "Licence", span: "md:col-span-3", hue: "var(--violet)" },
+  { icon: I.bolt, title: "Optimiseur", text: "Il trouve ce qui ralentit ton PC, l'explique simplement, et chaque action peut être annulée.", tag: "Boost auto", span: "md:col-span-6", img: "assets/img/app-optimiseur.webp", hue: "var(--cyan)", wide: true },
+];
+function BentoCard({ f, i }) {
+  const ref = useRef(null);
+  const onMove = e => { const r = ref.current.getBoundingClientRect(); ref.current.style.setProperty('--x', `${e.clientX - r.left}px`); ref.current.style.setProperty('--y', `${e.clientY - r.top}px`); };
+  return (
+    <motion.article ref={ref} onPointerMove={onMove}
+      initial={reduce ? false : { opacity: 0, y: 50, scale: .97 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 1, ease: EASE, delay: (i % 3) * .08 }} whileHover={{ y: -6 }}
+      className={"bento-card panel group relative flex min-w-0 flex-col overflow-hidden rounded-[28px] p-7 " + f.span + (f.wide ? " md:grid md:grid-cols-2 md:items-center md:gap-10" : "")}>
+      <div className="spot pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+      <div className="pointer-events-none absolute inset-0 rounded-[28px] opacity-0 transition-opacity duration-500 group-hover:opacity-100" style={{ boxShadow: `inset 0 0 0 1px ${f.hue}` }} />
+      <div className="relative">
+        <div className="flex items-center justify-between">
+          <motion.div whileHover={{ rotate: -8, scale: 1.08 }} className="grid h-12 w-12 place-items-center rounded-2xl" style={{ background: 'rgba(255,255,255,.06)', color: f.hue }}><Icon d={f.icon} /></motion.div>
+          <span className="chip rounded-full border line px-3 py-1">{f.tag}</span>
+        </div>
+        <h3 className="mt-6 text-2xl font-bold md:text-3xl">{f.title}</h3>
+        <p className="muted mt-2 max-w-md leading-relaxed">{f.text}</p>
+        <div className="mt-5 flex items-center gap-1 text-sm font-medium opacity-70 transition-all group-hover:gap-2 group-hover:opacity-100" style={{ color: f.hue }}>En savoir plus <Icon d={I.arrow} className="h-4 w-4" /></div>
+      </div>
+      {f.img && <div className={"relative " + (f.wide ? "mt-8 md:mt-0" : "mt-auto pt-8")}><div className="frame transition-transform duration-700 group-hover:scale-[1.02]"><img src={f.img} alt={"Réglages " + f.title} width="1100" height="900" loading="lazy" /></div></div>}
+    </motion.article>
+  );
+}
+function Bento() {
+  return (
+    <section className="gutter py-28">
+      <div className="mx-auto max-w-6xl">
+        <Reveal><p className="chip">Fonctions</p></Reveal>
+        <Reveal delay={.05}><h2 className="mt-3 max-w-3xl text-[clamp(2.2rem,5vw,4rem)] font-bold leading-[1]">Tout ce qu'il te faut. <span className="muted">Au même endroit.</span></h2></Reveal>
+        <div className="mt-14 grid grid-cols-1 gap-4 md:auto-rows-[minmax(240px,auto)] md:grid-cols-6">
+          {FEATURES.map((f, i) => <BentoCard key={f.title} f={f} i={i} />)}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ───────────── 4. Comparatif (barres animées) ───────────── */
+const FEATURE_ROWS = ["Île, musique, stats, notifications", "Overlay, réticule, outils", "Assistant IA", "Studio de capture", "Instant replay", "Boost auto des jeux"];
+const COMPARE = [
+  { name: "Essai", sub: "3 jours, gratuit", features: 2, pcs: 1, color: "rgba(255,255,255,.35)" },
+  { name: "1 an", sub: "8 € pour un an", features: 6, pcs: 1, color: "linear-gradient(90deg,var(--violet),var(--pink))" },
+  { name: "À vie", sub: "15 € une fois", features: 6, pcs: 1, color: "linear-gradient(90deg,var(--violet),var(--cyan))" },
+  { name: "Famille", sub: "29 € une fois", features: 6, pcs: 3, color: "linear-gradient(90deg,var(--cyan),var(--pink))" },
+];
+function Bar({ value, max, color, label, delay }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-60px" });
+  return (
+    <div ref={ref} className="flex items-center gap-4">
+      <div className="h-3 flex-1 overflow-hidden rounded-full" style={{ background: 'rgba(255,255,255,.06)' }}>
+        <motion.div className="h-full rounded-full" style={{ background: color, width: reduce ? `${value / max * 100}%` : undefined }}
+          initial={reduce ? false : { width: 0 }} animate={inView ? { width: `${value / max * 100}%` } : {}} transition={{ duration: 1.4, ease: EASE, delay }} />
+      </div>
+      <span className="w-20 text-right text-sm font-semibold tnum">{label}</span>
+    </div>
+  );
+}
+function Compare({ go }) {
+  const [metric, setMetric] = useState("features");
+  const max = metric === "features" ? FEATURE_ROWS.length : 3;
+  return (
+    <section className="gutter py-28">
+      <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_1.2fr]">
+        <div>
+          <Reveal><p className="chip">Comparer</p></Reveal>
+          <Reveal delay={.05}><h2 className="mt-3 text-[clamp(2.2rem,5vw,4rem)] font-bold leading-[1]">Quelle formule <span className="grad">pour toi ?</span></h2></Reveal>
+          <Reveal delay={.1}><p className="muted mt-5 max-w-md text-lg leading-relaxed">L'essai montre l'essentiel. Une licence débloque tout : pour un an, ou pour toujours avec les mises à jour.</p></Reveal>
+          <Reveal delay={.15}>
+            <ul className="mt-8 grid gap-2 text-sm">
+              {FEATURE_ROWS.map((r, i) => (
+                <li key={r} className="flex items-center justify-between border-b line py-2">
+                  <span>{r}</span>
+                  <span className="flex gap-6 tnum"><span className={i < 2 ? "" : "muted"}>{i < 2 ? "✓" : "–"}</span><span style={{ color: 'var(--cyan)' }}>✓</span></span>
+                </li>
+              ))}
+              <li className="flex justify-end gap-6 pt-1 text-xs muted"><span>Essai</span><span>Licence</span></li>
+            </ul>
+          </Reveal>
+        </div>
+        <Reveal delay={.1} className="panel rounded-[28px] p-6 md:p-8">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h3 className="text-xl font-semibold">{metric === "features" ? "Fonctions débloquées" : "PC couverts par la licence"}</h3>
+            <div className="relative flex rounded-full p-1" style={{ background: 'rgba(255,255,255,.06)' }} role="tablist">
+              {[["features", "Fonctions"], ["pcs", "PC"]].map(([k, l]) => (
+                <button key={k} role="tab" aria-selected={metric === k} onClick={() => setMetric(k)} className="relative rounded-full px-4 py-1.5 text-sm">
+                  {metric === k && <motion.span layoutId="cmp" className="absolute inset-0 rounded-full bg-white/15" transition={{ type: "spring", stiffness: 400, damping: 30 }} />}
+                  <span className="relative">{l}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="mt-8 grid gap-7">
+            {COMPARE.map((c, i) => (
+              <div key={c.name + metric}>
+                <div className="mb-2 flex items-baseline justify-between"><span className="font-semibold">{c.name}</span><span className="muted text-sm">{c.sub}</span></div>
+                <Bar value={c[metric]} max={max} color={c.color} delay={i * .12} label={metric === "features" ? `${c.features} / ${max}` : `${c.pcs} PC`} />
+              </div>
+            ))}
+          </div>
+          <button onClick={() => go("configurer")} className="mt-10 flex items-center gap-2 text-sm font-semibold" style={{ color: 'var(--cyan)' }}>Configurer ma licence <Icon d={I.arrow} className="h-4 w-4" /></button>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+/* ───────────── 5. Appel à l'action ───────────── */
+function CTA({ go }) {
+  return (
+    <section className="gutter py-28">
+      <Reveal className="relative mx-auto max-w-6xl overflow-hidden rounded-[36px] px-6 py-20 text-center md:py-28" style={{ background: 'radial-gradient(120% 120% at 50% 0%, rgba(124,92,255,.35), rgba(34,211,238,.08) 50%, transparent 75%), var(--panel)', border: '1px solid var(--line)' }}>
+        <h2 className="mx-auto max-w-4xl text-[clamp(2.6rem,8vw,6rem)] font-extrabold leading-[.92]">Prête quand <span className="grad">tu l'es.</span></h2>
+        <p className="muted mx-auto mt-6 max-w-lg text-lg">Choisis ta formule, colle ta clé dans l'appli, et c'est tout. 8 € pour un an, ou 15 € à vie, sans abonnement.</p>
+        <div className="mt-10 flex flex-wrap justify-center gap-3">
+          <motion.button whileHover={{ y: -2, boxShadow: "0 14px 50px rgba(124,92,255,.5)" }} whileTap={{ scale: .97 }} onClick={() => go("configurer")} className="flex items-center gap-2 rounded-full bg-white px-8 py-4 text-lg font-semibold text-black">
+            Configurer <Icon d={I.arrow} className="h-5 w-5" />
+          </motion.button>
+          <a href={DL} className="line rounded-full border px-8 py-4 text-lg font-semibold">Essai gratuit</a>
+        </div>
+      </Reveal>
+    </section>
+  );
+}
+
+/* ───────────── Pages ───────────── */
+function Accueil({ go }) {
+  return <><Hero go={go} /><Stats /><Bento /><Compare go={go} /><CTA go={go} /></>;
+}
+function Placeholder({ title, sub }) {
+  return (
+    <section className="gutter flex min-h-[80svh] flex-col items-center justify-center pt-32 text-center">
+      <p className="chip">Bientôt</p>
+      <h1 className="mt-4 text-[clamp(3rem,10vw,7rem)] font-extrabold leading-[.95]">{title}</h1>
+      <p className="muted mt-5 max-w-md text-lg">{sub}</p>
+    </section>
+  );
+}
+
+/* ═════════════════════════ TECHNOLOGIE ═════════════════════════ */
+function KineticTitle({ lines, className = "" }) {
+  let n = 0;
+  return (
+    <h1 className={className}>
+      {lines.map((line, li) => (
+        <span key={li} className="block">
+          {line.words.map((w, wi) => {
+            const i = n++;
+            return (
+              <span key={wi} className="inline-block overflow-hidden pb-[.1em] align-bottom">
+                <motion.span className={"inline-block " + (line.grad ? "grad" : "")}
+                  initial={reduce ? false : { y: "115%", rotateX: -60, opacity: 0 }} animate={{ y: "0%", rotateX: 0, opacity: 1 }}
+                  transition={{ duration: 1.2, ease: EASE, delay: .15 + i * .07 }}>{w}&nbsp;</motion.span>
+              </span>
+            );
+          })}
+        </span>
+      ))}
+    </h1>
+  );
+}
+
+function TechHero() {
+  return (
+    <section className="gutter relative flex min-h-[85svh] flex-col justify-center overflow-hidden pb-16 pt-36">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(60% 50% at 70% 30%, rgba(34,211,238,.18), transparent 70%), radial-gradient(50% 50% at 20% 70%, rgba(124,92,255,.22), transparent 70%)' }} />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[.07]" style={{ backgroundImage: 'linear-gradient(var(--fg) 1px, transparent 1px), linear-gradient(90deg, var(--fg) 1px, transparent 1px)', backgroundSize: '64px 64px', maskImage: 'radial-gradient(70% 60% at 50% 40%, #000, transparent)' }} />
+      <div className="relative mx-auto w-full max-w-6xl">
+        <motion.p initial={reduce ? false : { opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .8, ease: EASE }} className="chip">Technologie</motion.p>
+        <KineticTitle className="mt-5 text-[clamp(3rem,11vw,9.5rem)] font-extrabold leading-[.88]"
+          lines={[{ words: ["Petite", "pilule."] }, { words: ["Grosse", "mécanique."], grad: true }]} />
+        <motion.div initial={reduce ? false : { opacity: 0, y: 20, filter: "blur(8px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} transition={{ duration: 1.2, ease: EASE, delay: .7 }}
+          className="mt-10 grid max-w-4xl gap-6 md:grid-cols-[1.4fr_1fr]">
+          <p className="muted text-lg leading-relaxed md:text-xl">Une appli native Windows en C# et .NET 8, dessinée avec WPF et accélérée par le GPU. Elle écoute le système (médias, notifications, audio, batterie) et ne s'anime que quand quelque chose se passe.</p>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            {[[".NET 8", "Runtime"], ["WPF", "Rendu GPU"], ["x64", "Windows 10 / 11"], ["1 050", "Tests automatisés"]].map(([a, b]) => (
+              <div key={b} className="panel rounded-2xl p-4"><div className="text-xl font-bold tnum">{a}</div><div className="muted mt-1">{b}</div></div>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+const HOTSPOTS = [
+  { id: "cover", x: 13, y: 34, title: "Pochette et halo", text: "La pochette est lue depuis Windows. Ses couleurs dominantes sont extraites pour teinter le fond de l'île et le halo au changement de morceau.", tag: "Médias Windows" },
+  { id: "bar", x: 52, y: 58, title: "Progression en direct", text: "La position du morceau est mise à jour en continu, avec le temps écoulé et restant. Un clic sur la barre déplace la lecture.", tag: "Contrôles" },
+  { id: "eq", x: 86, y: 34, title: "Égaliseur réactif", text: "Les barres suivent le niveau audio réel de ta sortie son, capté sans rien installer d'autre.", tag: "WASAPI" },
+  { id: "tabs", x: 50, y: 88, title: "Onglets rapides", text: "Média, stats, contrôles et volume par application. Le reste est rangé dans le menu ⋯ pour garder la barre légère.", tag: "Navigation" },
+];
+function Hotspots() {
+  const [active, setActive] = useState("cover");
+  const cur = HOTSPOTS.find(h => h.id === active);
+  return (
+    <section className="gutter py-28">
+      <div className="mx-auto max-w-6xl">
+        <Reveal><p className="chip">Vue interactive</p></Reveal>
+        <Reveal delay={.05}><h2 className="mt-3 max-w-3xl text-[clamp(2.2rem,5vw,4rem)] font-bold leading-[1]">Touche pour <span className="grad">explorer.</span></h2></Reveal>
+        <div className="mt-14 grid items-center gap-10 lg:grid-cols-[1.5fr_1fr]">
+          <Reveal className="relative">
+            <div className="relative mx-auto aspect-[16/10] w-full max-w-[640px] rounded-[36px] p-[6%]" style={{ background: 'radial-gradient(70% 70% at 50% 40%, rgba(124,92,255,.25), transparent 70%)' }}>
+              {/* L'île ouverte */}
+              <div className="relative flex h-full w-full flex-col justify-between rounded-[44px] bg-black p-[6%] shadow-[0_0_0_1px_rgba(255,255,255,.08),0_40px_100px_rgba(0,0,0,.9)]" style={{ background: 'linear-gradient(135deg,#2a0f1e,#000 55%,#0c1a20)' }}>
+                <div className="flex items-center gap-[4%]">
+                  <div className="aspect-square w-[18%] rounded-2xl" style={{ background: 'linear-gradient(135deg,var(--pink),var(--violet) 60%,var(--cyan))' }} />
+                  <div className="min-w-0 flex-1"><div className="truncate text-[clamp(.8rem,2vw,1.15rem)] font-semibold">Sur Paname</div><div className="muted truncate text-[clamp(.7rem,1.6vw,.9rem)]">PNL</div></div>
+                  <div className="eq flex h-[18px] items-end gap-[3px]" aria-hidden="true"><i /><i /><i /><i /></div>
+                </div>
+                <div>
+                  <div className="h-1.5 overflow-hidden rounded-full bg-white/10"><motion.div className="h-full rounded-full" style={{ background: 'var(--pink)' }} initial={{ width: "20%" }} animate={reduce ? {} : { width: ["20%", "70%"] }} transition={{ duration: 12, repeat: Infinity, ease: "linear" }} /></div>
+                  <div className="muted mt-1 flex justify-between text-[10px] tnum"><span>2:47</span><span>-1:19</span></div>
+                </div>
+                <div className="flex justify-center gap-[6%] text-white/60">
+                  {[I.spark, I.music, I.bolt, I.bell].map((d, i) => <Icon key={i} d={d} className="h-4 w-4" />)}
+                </div>
+              </div>
+              {/* Points cliquables */}
+              {HOTSPOTS.map(h => (
+                <button key={h.id} onClick={() => setActive(h.id)} aria-label={h.title} aria-pressed={active === h.id}
+                  className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: `${h.x}%`, top: `${h.y}%` }}>
+                  <span className="relative grid h-8 w-8 place-items-center">
+                    {!reduce && <motion.span className="absolute inset-0 rounded-full" style={{ background: 'var(--cyan)' }} animate={{ scale: [1, 2.2], opacity: [.5, 0] }} transition={{ duration: 1.8, repeat: Infinity }} />}
+                    <motion.span animate={{ scale: active === h.id ? 1.15 : 1 }} className="relative grid h-7 w-7 place-items-center rounded-full border-2 text-xs font-bold"
+                      style={{ background: active === h.id ? 'var(--cyan)' : 'rgba(0,0,0,.6)', borderColor: 'var(--cyan)', color: active === h.id ? '#000' : 'var(--cyan)' }}>+</motion.span>
+                  </span>
+                </button>
+              ))}
+            </div>
+          </Reveal>
+          <div className="min-h-[260px]">
+            <AnimatePresence mode="wait">
+              <motion.div key={cur.id} initial={{ opacity: 0, x: 30, filter: "blur(6px)" }} animate={{ opacity: 1, x: 0, filter: "blur(0px)" }} exit={{ opacity: 0, x: -20, filter: "blur(6px)" }} transition={{ duration: .45, ease: EASE }}
+                className="glass rounded-[28px] p-8">
+                <span className="chip rounded-full border line px-3 py-1">{cur.tag}</span>
+                <h3 className="mt-5 text-3xl font-bold">{cur.title}</h3>
+                <p className="muted mt-3 leading-relaxed">{cur.text}</p>
+                <div className="mt-6 flex gap-2">
+                  {HOTSPOTS.map(h => <button key={h.id} onClick={() => setActive(h.id)} aria-label={h.title} className="h-1.5 rounded-full transition-all" style={{ width: h.id === active ? 28 : 10, background: h.id === active ? 'var(--cyan)' : 'rgba(255,255,255,.2)' }} />)}
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const SPECS = [
+  { group: "Matériaux", icon: I.spark, rows: [
+    { k: "Langage", v: "C# 12", p: 100 },
+    { k: "Interface", v: "WPF, rendu GPU", p: 100 },
+    { k: "Thèmes de l'île", v: "9 styles", p: 90 },
+  ] },
+  { group: "Puissance", icon: I.bolt, rows: [
+    { k: "Mémoire", v: "≈ 150 Mo", p: 30 },
+    { k: "En jeu", v: "Mise en veille", p: 15 },
+    { k: "Tests automatisés", v: "1 050", p: 100 },
+  ] },
+  { group: "Dimensions", icon: I.game, rows: [
+    { k: "Échelle de l'île", v: "50 à 200 %", p: 75 },
+    { k: "Distance du haut", v: "0 à 200 px", p: 60 },
+    { k: "Écrans", v: "Au choix, multi-écran", p: 100 },
+  ] },
+];
+function SpecBar({ p, delay }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-40px" });
+  return (
+    <div ref={ref} className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/[.06]">
+      <motion.div className="h-full rounded-full" style={{ background: 'linear-gradient(90deg,var(--violet),var(--cyan))', width: reduce ? `${p}%` : undefined }}
+        initial={reduce ? false : { width: 0 }} animate={inView ? { width: `${p}%` } : {}} transition={{ duration: 1.3, ease: EASE, delay }} />
+    </div>
+  );
+}
+function Specs() {
+  return (
+    <section className="gutter py-28">
+      <div className="mx-auto max-w-6xl">
+        <Reveal><p className="chip">Caractéristiques</p></Reveal>
+        <Reveal delay={.05}><h2 className="mt-3 max-w-3xl text-[clamp(2.2rem,5vw,4rem)] font-bold leading-[1]">Sous le capot.</h2></Reveal>
+        <div className="mt-14 grid gap-4 md:grid-cols-3">
+          {SPECS.map((g, gi) => (
+            <Reveal key={g.group} delay={gi * .1} className="panel rounded-[28px] p-7">
+              <div className="flex items-center gap-3">
+                <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/[.06]" style={{ color: 'var(--cyan)' }}><Icon d={g.icon} className="h-5 w-5" /></div>
+                <h3 className="text-xl font-semibold">{g.group}</h3>
+              </div>
+              <dl className="mt-6 grid gap-5">
+                {g.rows.map((r, ri) => (
+                  <div key={r.k}>
+                    <div className="flex items-baseline justify-between gap-3 text-sm"><dt className="muted">{r.k}</dt><dd className="font-semibold tnum">{r.v}</dd></div>
+                    <SpecBar p={r.p} delay={gi * .1 + ri * .1} />
+                  </div>
+                ))}
+              </dl>
+            </Reveal>
+          ))}
+        </div>
+        <p className="muted mt-6 text-xs">Les barres montrent la valeur par rapport au maximum réglable ou attendu, pas une mesure comparée.</p>
+      </div>
+    </section>
+  );
+}
+
+const FAQS = [
+  { q: "Sur quels Windows ça marche ?", a: "Windows 10 (version 2004 ou plus récente) et Windows 11. L'installateur ajoute .NET 8 tout seul si ton PC ne l'a pas." },
+  { q: "C'est sans danger avec les jeux et les anti-triche ?", a: "L'overlay et le réticule sont de simples fenêtres posées par-dessus l'écran. Rien n'est injecté dans les jeux, comme la Xbox Game Bar." },
+  { q: "Que fait l'appli de mes données ?", a: "L'essentiel reste sur ton PC. Ce qui peut en sortir (licence, mises à jour, paroles, assistant IA) est détaillé dans la politique de confidentialité. Aucune publicité, aucun outil d'analyse." },
+  { q: "L'essai gratuit peut-il être refait ?", a: "Non. L'essai dure 3 jours et n'est accordé qu'une fois par PC : réinstaller l'appli ne donne pas un nouvel essai." },
+];
+function Faq() {
+  const [open, setOpen] = useState(0);
+  return (
+    <section className="gutter py-28">
+      <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_1.6fr]">
+        <div>
+          <Reveal><p className="chip">FAQ</p></Reveal>
+          <Reveal delay={.05}><h2 className="mt-3 text-[clamp(2.2rem,5vw,4rem)] font-bold leading-[1]">Questions <span className="muted">techniques.</span></h2></Reveal>
+        </div>
+        <div className="grid gap-3">
+          {FAQS.map((f, i) => {
+            const on = open === i;
+            return (
+              <Reveal key={f.q} delay={i * .06} className={"panel overflow-hidden rounded-3xl transition-colors " + (on ? "bg-white/[.04]" : "")}>
+                <button className="flex w-full items-center justify-between gap-4 p-6 text-left" onClick={() => setOpen(on ? -1 : i)} aria-expanded={on}>
+                  <span className="text-lg font-semibold">{f.q}</span>
+                  <motion.span animate={{ rotate: on ? 45 : 0 }} transition={{ type: "spring", stiffness: 300, damping: 22 }} className="grid h-8 w-8 flex-none place-items-center rounded-full bg-white/[.08] text-lg">+</motion.span>
+                </button>
+                <AnimatePresence initial={false}>
+                  {on && (
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: .45, ease: EASE }}>
+                      <p className="muted px-6 pb-6 leading-relaxed">{f.a}</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </Reveal>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+function Technologie() {
+  return <><TechHero /><Hotspots /><Specs /><Faq /></>;
+}
+
+/* ═════════════════════════ CONFIGURER ═════════════════════════ */
+const STYLES = [
+  { id: "classique", name: "Classique", bg: "#000000", ring: "#3A3A3C", glow: "rgba(255,255,255,.12)" },
+  { id: "liquide", name: "Verre liquide", bg: "linear-gradient(160deg,rgba(255,255,255,.28),rgba(255,255,255,.06))", ring: "#E5E5EA", glow: "rgba(255,255,255,.35)", glass: true },
+  { id: "neon", name: "Néon", bg: "#000000", ring: "#BF5AF2", glow: "rgba(191,90,242,.6)" },
+  { id: "aurore", name: "Aurore", bg: "linear-gradient(120deg,#1b103a,#062a33)", ring: "#22D3EE", glow: "rgba(34,211,238,.45)" },
+  { id: "coucher", name: "Coucher", bg: "linear-gradient(120deg,#3a1206,#2a0820)", ring: "#FF9F0A", glow: "rgba(255,159,10,.45)" },
+  { id: "ocean", name: "Océan", bg: "linear-gradient(120deg,#031a3a,#04122a)", ring: "#0A84FF", glow: "rgba(10,132,255,.45)" },
+];
+const VERSIONS = [
+  { id: "an", name: "1 an", sub: "1 PC · 12 mois", price: 8, perks: ["Toutes les fonctions", "Mises à jour pendant un an"] },
+  { id: "vie", name: "À vie", sub: "1 PC · paiement unique", price: 15, perks: ["Toutes les fonctions", "Mises à jour incluses"] },
+  { id: "famille", name: "Famille", sub: "Jusqu'à 3 PC · paiement unique", price: 29, perks: ["Toutes les fonctions", "Support prioritaire"] },
+];
+// Options payantes : aucune pour l'instant (ajoute-les ici, la section s'affiche toute seule)
+const EXTRAS = [];
+// Le paiement se fait sur Discord, en message privé
+const CHECKOUT = "https://discord.com/users/1456994725566353485";
+
+function AnimatedPrice({ value, className = "" }) {
+  return (
+    <span className={"relative inline-flex overflow-hidden tnum " + className}>
+      <AnimatePresence mode="popLayout" initial={false}>
+        <motion.span key={value} initial={{ y: "100%", opacity: 0 }} animate={{ y: "0%", opacity: 1 }} exit={{ y: "-100%", opacity: 0 }} transition={{ duration: .45, ease: EASE }}>
+          {value} €
+        </motion.span>
+      </AnimatePresence>
+    </span>
+  );
+}
+
+function ProductVisual({ style }) {
+  return (
+    <div className="relative grid aspect-square w-full place-items-center overflow-hidden rounded-[36px] panel">
+      <motion.div aria-hidden="true" className="absolute inset-0" animate={{ background: `radial-gradient(60% 50% at 50% 45%, ${style.glow}, transparent 70%)` }} transition={{ duration: .8, ease: EASE }} />
+      {/* Écran stylisé */}
+      <div className="absolute inset-x-[8%] top-[10%] bottom-[22%] rounded-[22px] border line" style={{ background: 'linear-gradient(180deg,#14141a,#0a0a0d)' }}>
+        <div className="absolute left-1/2 top-0 -translate-x-1/2">
+          <motion.div layout animate={{ background: style.bg, boxShadow: `0 0 0 1px ${style.ring}, 0 10px 40px ${style.glow}` }} transition={{ duration: .6, ease: EASE }}
+            className="mt-3 flex items-center gap-3 rounded-full px-3 py-2" style={{ backdropFilter: style.glass ? 'blur(12px)' : undefined }}>
+            <div className="h-8 w-8 rounded-lg" style={{ background: 'linear-gradient(135deg,var(--pink),var(--violet) 60%,var(--cyan))' }} />
+            <div className="pr-1"><div className="text-xs font-semibold">Sur Paname</div><div className="text-[10px] text-white/60">PNL</div></div>
+            <div className="eq ml-2 flex h-[14px] items-end gap-[3px]" aria-hidden="true"><i /><i /><i /><i /></div>
+          </motion.div>
+        </div>
+      </div>
+      <div className="absolute bottom-[14%] h-[4%] w-[30%] rounded-b-xl bg-white/10" />
+      <div className="absolute bottom-[10%] h-[2%] w-[44%] rounded-full bg-white/10" />
+      <AnimatePresence mode="wait">
+        <motion.p key={style.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: .3 }} className="absolute bottom-[3%] text-sm muted">Style {style.name}</motion.p>
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function Configurer() {
+  const [styleId, setStyleId] = useState("liquide");
+  const [versionId, setVersionId] = useState("vie");
+  const [extras, setExtras] = useState([]);
+  const [cart, setCart] = useState(null);
+  const style = STYLES.find(s => s.id === styleId);
+  const version = VERSIONS.find(v => v.id === versionId);
+  const extrasTotal = EXTRAS.filter(e => extras.includes(e.id)).reduce((a, e) => a + e.price, 0);
+  const total = version.price + extrasTotal;
+  const toggle = id => setExtras(x => x.includes(id) ? x.filter(i => i !== id) : [...x, id]);
+  const add = () => setCart({ style, version, extras: EXTRAS.filter(e => extras.includes(e.id)), total });
+
+  return (
+    <>
+      <section className="gutter pb-40 pt-32">
+        <div className="mx-auto max-w-6xl">
+          <motion.p initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} className="chip">Configurer</motion.p>
+          <KineticTitle className="mt-3 text-[clamp(2.4rem,6vw,4.5rem)] font-bold leading-[1]" lines={[{ words: ["Ta", "Dynamic", "Island."] }]} />
+          <div className="mt-12 grid gap-10 lg:grid-cols-[1.1fr_1fr]">
+            <div className="lg:sticky lg:top-28 lg:self-start"><ProductVisual style={style} /></div>
+
+            <div className="grid gap-12">
+              {/* Style */}
+              <div>
+                <h2 className="text-2xl font-semibold">Style. <span className="muted">Lequel te ressemble ?</span></h2>
+                <p className="muted mt-2 text-sm">Tous les styles sont inclus et changent en un clic dans l'appli.</p>
+                <div className="mt-5 flex flex-wrap gap-3" role="radiogroup" aria-label="Style de l'île">
+                  {STYLES.map(s => (
+                    <button key={s.id} role="radio" aria-checked={s.id === styleId} aria-label={s.name} onClick={() => setStyleId(s.id)} className="relative grid h-11 w-11 place-items-center rounded-full">
+                      {s.id === styleId && <motion.span layoutId="swatch" className="absolute inset-0 rounded-full border-2" style={{ borderColor: 'var(--cyan)' }} transition={{ type: "spring", stiffness: 400, damping: 30 }} />}
+                      <span className="h-8 w-8 rounded-full" style={{ background: s.bg, boxShadow: `inset 0 0 0 1px ${s.ring}` }} />
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-3 text-sm font-medium">{style.name}</p>
+              </div>
+
+              {/* Version */}
+              <div>
+                <h2 className="text-2xl font-semibold">Licence. <span className="muted">Pour combien de PC ?</span></h2>
+                <div className="mt-5 grid gap-3" role="radiogroup" aria-label="Licence">
+                  {VERSIONS.map(v => {
+                    const on = v.id === versionId;
+                    return (
+                      <button key={v.id} role="radio" aria-checked={on} onClick={() => setVersionId(v.id)}
+                        className="relative flex items-center justify-between gap-4 rounded-2xl border p-5 text-left transition-colors" style={{ borderColor: on ? 'var(--cyan)' : 'var(--line)', background: on ? 'rgba(34,211,238,.05)' : 'transparent' }}>
+                        <div>
+                          <div className="text-lg font-semibold">{v.name}</div>
+                          <div className="muted text-sm">{v.sub}</div>
+                          <div className="muted mt-2 text-xs">{v.perks.join(" · ")}</div>
+                        </div>
+                        <div className="text-lg font-semibold tnum">{v.price} €</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Options */}
+              {EXTRAS.length > 0 && <div>
+                <h2 className="text-2xl font-semibold">Options. <span className="muted">Facultatives.</span></h2>
+                <div className="mt-5 grid gap-3">
+                  {EXTRAS.map(e => {
+                    const on = extras.includes(e.id);
+                    return (
+                      <label key={e.id} htmlFor={"x-" + e.id} className="flex cursor-pointer items-center gap-4 rounded-2xl border p-5 transition-colors" style={{ borderColor: on ? 'var(--cyan)' : 'var(--line)' }}>
+                        <input id={"x-" + e.id} type="checkbox" className="sr-only" checked={on} onChange={() => toggle(e.id)} />
+                        <span className="grid h-6 w-6 flex-none place-items-center rounded-lg border-2 transition-colors" style={{ borderColor: on ? 'var(--cyan)' : 'rgba(255,255,255,.25)', background: on ? 'var(--cyan)' : 'transparent' }}>
+                          <AnimatePresence>{on && <motion.svg initial={{ pathLength: 0, scale: .6 }} animate={{ pathLength: 1, scale: 1 }} exit={{ scale: 0 }} viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="#000" strokeWidth="3"><motion.path d="M5 12l5 5 9-10" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: .3 }} /></motion.svg>}</AnimatePresence>
+                        </span>
+                        <span className="min-w-0 flex-1"><span className="block font-semibold">{e.name}</span><span className="muted block text-sm">{e.desc}</span></span>
+                        <span className="font-semibold tnum">+{e.price} €</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>}
+
+              {/* Récap */}
+              <div className="panel rounded-[28px] p-6">
+                <div className="flex items-baseline justify-between"><span className="muted">Total</span><AnimatedPrice value={total} className="text-4xl font-bold" /></div>
+                <p className="muted mt-2 text-sm">{versionId === "an" ? "Valable 12 mois." : "Paiement unique."} Le paiement se fait sur Discord, puis tu reçois ta clé à coller dans l'appli.</p>
+                <motion.button whileHover={{ y: -2 }} whileTap={{ scale: .97 }} onClick={add} className="mt-6 w-full rounded-full bg-white py-4 text-lg font-semibold text-black">Ajouter au panier</motion.button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Barre flottante */}
+      <motion.div initial={reduce ? false : { y: 100 }} animate={{ y: 0 }} transition={{ duration: .8, ease: EASE, delay: .5 }}
+        className="fixed inset-x-0 bottom-0 z-40 gutter" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)' }}>
+        <div className="glass mx-auto flex max-w-3xl items-center justify-between gap-4 rounded-full py-2 pl-6 pr-2">
+          <div className="min-w-0 truncate text-sm"><span className="font-semibold">{version.name}</span><span className="muted"> · {style.name}{extras.length ? ` · ${extras.length} option${extras.length > 1 ? "s" : ""}` : ""}</span></div>
+          <div className="flex items-center gap-3">
+            <AnimatedPrice value={total} className="text-lg font-bold" />
+            <motion.button whileTap={{ scale: .95 }} onClick={add} className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black">Ajouter</motion.button>
+          </div>
+        </div>
+      </motion.div>
+
+      <CartDrawer cart={cart} onClose={() => setCart(null)} />
+    </>
+  );
+}
+
+function CartDrawer({ cart, onClose }) {
+  useEffect(() => {
+    if (!cart) return;
+    const f = e => e.key === "Escape" && onClose();
+    window.addEventListener('keydown', f); return () => window.removeEventListener('keydown', f);
+  }, [cart]);
+  return (
+    <AnimatePresence>
+      {cart && (
+        <>
+          <motion.div className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
+          <motion.aside role="dialog" aria-label="Panier" className="fixed bottom-0 right-0 top-0 z-[80] flex w-full max-w-md flex-col border-l line"
+            style={{ background: 'var(--panel)', paddingTop: 'env(safe-area-inset-top, 0px)', paddingBottom: 'env(safe-area-inset-bottom, 0px)', paddingRight: 'env(safe-area-inset-right, 0px)' }}
+            initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", stiffness: 260, damping: 30 }}>
+            <div className="flex items-center justify-between border-b line p-6">
+              <h2 className="text-xl font-semibold">Panier</h2>
+              <button onClick={onClose} aria-label="Fermer" className="rounded-full p-2 hover:bg-white/10"><Icon d={I.close} className="h-5 w-5" /></button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-6">
+              <motion.div initial={{ scale: .5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", stiffness: 300, damping: 18, delay: .15 }}
+                className="mx-auto grid h-16 w-16 place-items-center rounded-full" style={{ background: 'var(--green)' }}>
+                <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke="#000" strokeWidth="3"><motion.path d="M5 12l5 5 9-10" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: .5, delay: .35 }} /></svg>
+              </motion.div>
+              <p className="mt-4 text-center text-lg font-semibold">Ajouté au panier</p>
+              <div className="mt-8 grid gap-3 text-sm">
+                {[[`Licence ${cart.version.name}`, cart.version.price], [`Style ${cart.style.name}`, 0], ...cart.extras.map(e => [e.name, e.price])].map(([n, p], i) => (
+                  <motion.div key={n} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: .3 + i * .07, ease: EASE }} className="flex justify-between border-b line pb-3">
+                    <span>{n}</span><span className="tnum">{p ? `${p} €` : "Inclus"}</span>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+            <div className="border-t line p-6">
+              <div className="flex items-baseline justify-between"><span className="muted">Total</span><span className="text-3xl font-bold tnum">{cart.total} €</span></div>
+              <a href={CHECKOUT} target="_blank" rel="noopener" className="mt-5 block rounded-full bg-white py-4 text-center text-lg font-semibold text-black">Payer sur Discord</a>
+              <p className="muted mt-3 text-center text-xs">Envoie-moi « {cart.version.name} » en message privé pour recevoir ta clé.</p>
+              <button onClick={onClose} className="mt-3 w-full py-2 text-sm muted hover:text-white">Continuer mes achats</button>
+            </div>
+          </motion.aside>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
+/* ═════════════════════════ À PROPOS ═════════════════════════ */
+function Manifesto() {
+  const lines = ["Ton PC sait déjà tout.", "Il ne te le montre", "jamais au bon moment.", "On a changé ça."];
+  return (
+    <section className="relative flex min-h-[100svh] items-center overflow-hidden gutter" style={{ background: 'var(--fg)', color: '#000' }}>
+      <div className="mx-auto w-full max-w-6xl pb-20 pt-36">
+        <motion.p initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} className="text-xs font-semibold uppercase tracking-[.2em]" style={{ color: '#555' }}>Manifeste</motion.p>
+        <h1 className="mt-8 text-[clamp(2.6rem,8.5vw,7.5rem)] font-extrabold leading-[.95]">
+          {lines.map((l, i) => (
+            <span key={i} className="block overflow-hidden pb-[.06em]">
+              <motion.span className="block" style={i === 3 ? { background: 'linear-gradient(100deg,var(--violet),#0891B2)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' } : undefined}
+                initial={reduce ? false : { y: "105%" }} animate={{ y: "0%" }} transition={{ duration: 1.2, ease: EASE, delay: .2 + i * .14 }}>{l}</motion.span>
+            </span>
+          ))}
+        </h1>
+        <motion.p initial={reduce ? false : { opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, ease: EASE, delay: .9 }} className="mt-10 max-w-xl text-lg leading-relaxed md:text-xl" style={{ color: '#333' }}>
+          Dynamic Island est née d'une idée simple : ce qui compte doit apparaître là où tu regardes déjà, puis disparaître. Pas d'onglet en plus, pas de fenêtre à chercher.
+        </motion.p>
+      </div>
+    </section>
+  );
+}
+
+const TIMELINE = [
+  { v: "1.6", title: "L'île devient un outil de jeu", text: "Premier réticule au centre de l'écran, comportement en plein écran, halo aux couleurs de la musique, mises à jour automatiques." },
+  { v: "1.8", title: "L'Optimiseur arrive", text: "Analyse du PC, nettoyage des caches, maintenance automatique au repos, et l'essai gratuit de 3 jours." },
+  { v: "1.9", title: "Une île pour toute la journée", text: "Onglet Aujourd'hui avec météo et agenda, Pomodoro, notes rapides, mode streamer et capture annotée." },
+  { v: "Nov. 2026", title: "Première version publique", text: "Le projet sort en public le 9 novembre 2026, avec son site, ses licences et un nouveau design en cours." },
+];
+function TimelineItem({ t, i }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { margin: "-45% 0px -45% 0px" });
+  return (
+    <div ref={ref} className="relative grid grid-cols-[40px_1fr] gap-6 pb-16 md:grid-cols-[1fr_40px_1fr]">
+      <div className={"hidden md:block " + (i % 2 ? "" : "md:text-right")}>
+        {i % 2 === 0 && <motion.div animate={{ opacity: inView ? 1 : .35 }} transition={{ duration: .5 }}><TimelineCard t={t} lit={inView} /></motion.div>}
+      </div>
+      <div className="relative flex justify-center">
+        <motion.span animate={{ scale: inView ? 1.25 : 1, background: inView ? 'var(--cyan)' : 'rgba(255,255,255,.15)', boxShadow: inView ? '0 0 24px rgba(34,211,238,.8)' : '0 0 0 rgba(0,0,0,0)' }}
+          transition={{ duration: .5, ease: EASE }} className="relative z-10 mt-1.5 h-4 w-4 rounded-full" />
+      </div>
+      <div>
+        <div className="md:hidden"><motion.div animate={{ opacity: inView ? 1 : .35 }}><TimelineCard t={t} lit={inView} /></motion.div></div>
+        {i % 2 === 1 && <motion.div className="hidden md:block" animate={{ opacity: inView ? 1 : .35 }} transition={{ duration: .5 }}><TimelineCard t={t} lit={inView} /></motion.div>}
+      </div>
+    </div>
+  );
+}
+function TimelineCard({ t, lit }) {
+  return (
+    <motion.div initial={reduce ? false : { opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-80px" }} transition={{ duration: 1, ease: EASE }}>
+      <div className="text-sm font-semibold tnum" style={{ color: lit ? 'var(--cyan)' : 'var(--muted)' }}>{/^\d/.test(t.v) ? "Version " + t.v : t.v}</div>
+      <h3 className="mt-2 text-2xl font-bold">{t.title}</h3>
+      <p className="muted mt-2 leading-relaxed">{t.text}</p>
+    </motion.div>
+  );
+}
+function Timeline() {
+  const ref = useRef(null);
+  const sc = useScroll ? useScroll({ target: ref, offset: ["start 60%", "end 60%"] }) : null;
+  const h = sc && useTransform ? useTransform(sc.scrollYProgress, [0, 1], ["0%", "100%"]) : "100%";
+  return (
+    <section className="gutter py-28">
+      <div className="mx-auto max-w-5xl">
+        <Reveal><p className="chip">Histoire</p></Reveal>
+        <Reveal delay={.05}><h2 className="mt-3 text-[clamp(2.2rem,5vw,4rem)] font-bold leading-[1]">Version après version.</h2></Reveal>
+        <div ref={ref} className="relative mt-16">
+          <div className="absolute bottom-0 left-[20px] top-0 w-px -translate-x-1/2 bg-white/10 md:left-1/2" />
+          <motion.div className="absolute left-[20px] top-0 w-px -translate-x-1/2 md:left-1/2" style={{ height: h, background: 'linear-gradient(var(--violet),var(--cyan))' }} />
+          {TIMELINE.map((t, i) => <TimelineItem key={t.v} t={t} i={i} />)}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const VALUES = [
+  { icon: ["M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z", "M12 8v4l3 2"], title: "Discrète", text: "L'île ne prend la parole que quand c'est utile. Le reste du temps, elle se fait oublier." },
+  { icon: ["M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4Z"], title: "Respectueuse", text: "Aucune pub, aucun outil d'analyse. Tes données restent sur ton PC autant que possible." },
+  { icon: ["M4 12h16", "M12 4v16"], title: "À ta main", text: "Neuf styles, des dizaines de réglages, et tout s'applique en direct. Tu décides de ce qu'elle montre." },
+];
+function Values() {
+  return (
+    <section className="gutter relative py-28">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(40% 50% at 25% 50%, rgba(124,92,255,.25), transparent 70%), radial-gradient(40% 50% at 80% 40%, rgba(34,211,238,.18), transparent 70%)' }} />
+      <div className="relative mx-auto max-w-6xl">
+        <Reveal><p className="chip">Valeurs</p></Reveal>
+        <Reveal delay={.05}><h2 className="mt-3 text-[clamp(2.2rem,5vw,4rem)] font-bold leading-[1]">Ce qui ne bougera pas.</h2></Reveal>
+        <div className="mt-14 grid gap-4 md:grid-cols-3">
+          {VALUES.map((v, i) => (
+            <motion.div key={v.title} initial={reduce ? false : { opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-60px" }} transition={{ duration: 1, ease: EASE, delay: i * .1 }}
+              whileHover={{ y: -8 }} className="glass rounded-[32px] p-8" style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,.12)' }}>
+              <div className="grid h-14 w-14 place-items-center rounded-2xl border line" style={{ color: 'var(--cyan)' }}><Icon d={v.icon} className="h-7 w-7" /></div>
+              <h3 className="mt-8 text-3xl font-bold">{v.title}</h3>
+              <p className="muted mt-3 leading-relaxed">{v.text}</p>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const fmtTime = ms => {
+  const d = new Date(ms), now = new Date();
+  const t = d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  return d.toDateString() === now.toDateString() ? t : d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" }) + " · " + t;
+};
+function Chat() {
+  const a = useAuth();
+  const [msgs, setMsgs] = useState(null);
+  const [text, setText] = useState("");
+  const [fail, setFail] = useState("");
+  const box = useRef(null);
+  const seq = useRef(0);
+  const load = async () => {
+    try {
+      const d = await a.call("/v1/messages");
+      setMsgs(old => [...d.messages, ...(old || []).filter(m => m.pending || m.failed)]);
+      setFail("");
+      if (d.unread && !document.hidden) { await a.call("/v1/messages/read", { method: "POST", body: {} }).catch(() => {}); }
+      a.setUnread(0);
+    } catch (e) { if (e.status !== 401 && e.status !== 403) setFail(e.message); }
+  };
+  useEffect(() => {
+    load();
+    const t = setInterval(() => { if (!document.hidden) load(); }, 20000);
+    const v = () => { if (!document.hidden) load(); };
+    document.addEventListener("visibilitychange", v);
+    return () => { clearInterval(t); document.removeEventListener("visibilitychange", v); };
+  }, [a.token]);
+  useEffect(() => { if (box.current) box.current.scrollTop = box.current.scrollHeight; }, [msgs && msgs.length]);
+
+  const send = async (body, retryKey) => {
+    const t = (body ?? text).trim();
+    if (!t) return;
+    if (t.length > 5000) { setFail("5000 caractères maximum."); return; }
+    const key = retryKey || "p" + (++seq.current);
+    setMsgs(m => [...(m || []).filter(x => x.key !== key), { key, from: "user", text: t, at: Date.now(), pending: true }]);
+    if (body === undefined) setText("");
+    setFail("");
+    try {
+      const r = await a.call("/v1/messages", { method: "POST", body: { text: t } });
+      setMsgs(m => (m || []).map(x => x.key === key ? r.message : x));
+    } catch (e) {
+      setMsgs(m => (m || []).map(x => x.key === key ? { ...x, pending: false, failed: true } : x));
+      setFail(e.status === 429 ? "Trop de messages envoyés. Réessaie dans une heure." : e.message);
+    }
+  };
+  const onKey = e => { if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); send(); } };
+
+  return (
+    <div className="flex h-[min(560px,70vh)] flex-col">
+      <div className="flex items-center gap-3 border-b pb-4" style={{ borderColor: 'var(--line)' }}>
+        <span className="grid h-10 w-10 place-items-center rounded-full font-bold text-white" style={{ background: 'linear-gradient(135deg,var(--violet),var(--cyan))' }}>A</span>
+        <div className="min-w-0 flex-1"><p className="font-semibold">Admin</p><p className="muted truncate text-xs">Conversation privée · connecté en tant que {a.user.username}</p></div>
+      </div>
+      <div ref={box} className="flex-1 space-y-3 overflow-y-auto py-4 pr-1" aria-live="polite" aria-label="Messages">
+        {msgs === null ? <p className="muted text-center text-sm">Chargement…</p>
+          : msgs.length === 0 ? <p className="muted py-10 text-center text-sm">Aucun message pour le moment. Pose ta question, je te réponds ici.</p>
+          : msgs.map((m, i) => {
+            const mine = m.from === "user";
+            return (
+              <motion.div key={m.key || (m.at + "-" + i)} initial={reduce ? false : { opacity: 0, y: 8, scale: .98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: .3, ease: EASE }}
+                className={"flex flex-col " + (mine ? "items-end" : "items-start")}>
+                {!mine && <span className="mb-1 ml-3 text-xs font-semibold" style={{ color: 'var(--cyan)' }}>Admin</span>}
+                <div className={"max-w-[85%] whitespace-pre-wrap break-words rounded-3xl px-4 py-2.5 " + (mine ? "rounded-br-lg text-white" : "rounded-bl-lg bg-white/[.07]")}
+                  style={mine ? { background: 'linear-gradient(135deg,rgba(139,92,246,.85),rgba(34,211,238,.75))', opacity: m.pending ? .6 : 1 } : undefined}>{m.text}</div>
+                <span className="muted mx-3 mt-1 text-[11px]">
+                  {m.failed ? <button onClick={() => send(m.text, m.key)} className="font-semibold" style={{ color: '#FF453A' }}>Échec de l'envoi · Réessayer</button> : m.pending ? "Envoi…" : fmtTime(m.at)}
+                </span>
+              </motion.div>
+            );
+          })}
+      </div>
+      {fail && <p role="alert" className="mb-2 text-sm" style={{ color: '#ff6b6b' }}>{fail}</p>}
+      <form onSubmit={e => { e.preventDefault(); send(); }} className="flex items-end gap-2 border-t pt-4" style={{ borderColor: 'var(--line)' }}>
+        <label htmlFor="chat-input" className="sr-only">Ton message</label>
+        <textarea id="chat-input" rows={1} value={text} onChange={e => setText(e.target.value)} onKeyDown={onKey} maxLength={5000} placeholder="Écris ton message… (Entrée pour envoyer, Maj+Entrée pour aller à la ligne)"
+          className="max-h-40 min-h-[48px] flex-1 resize-y rounded-3xl border bg-white/[.03] px-4 py-3 outline-none" style={{ borderColor: 'var(--line)' }} />
+        <motion.button whileHover={{ y: -2 }} whileTap={{ scale: .95 }} type="submit" disabled={!text.trim()} className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-white text-black disabled:opacity-40" aria-label="Envoyer">
+          <Icon d={I.arrow} className="h-5 w-5" />
+        </motion.button>
+      </form>
+    </div>
+  );
+}
+function Contact() {
+  const a = useAuth();
+  return (
+    <section id="contact" className="gutter scroll-mt-28 py-28">
+      <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_1.3fr]">
+        <div>
+          <Reveal><p className="chip">Contact</p></Reveal>
+          <Reveal delay={.05}><h2 className="mt-3 text-[clamp(2.2rem,5vw,4rem)] font-bold leading-[1]">Une idée, <span className="grad">un bug ?</span></h2></Reveal>
+          <Reveal delay={.1}><p className="muted mt-5 max-w-sm text-lg leading-relaxed">Écris-moi depuis ton compte : la conversation reste privée et mes réponses s'affichent ici. Pour une réponse plus rapide, passe aussi par Discord.</p></Reveal>
+          <Reveal delay={.15}><a href="https://discord.com/users/1456994725566353485" className="mt-6 inline-flex items-center gap-2 font-semibold" style={{ color: 'var(--cyan)' }}>Discord <Icon d={I.arrow} className="h-4 w-4" /></a></Reveal>
+        </div>
+        <Reveal delay={.1} className="panel relative overflow-hidden rounded-[32px] p-6 md:p-8">
+          <AnimatePresence mode="wait">
+            {a.user && !a.user.mustChange ? (
+              <motion.div key="chat" initial={{ opacity: 0, scale: .97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: .97 }} transition={{ duration: .4, ease: EASE }}><Chat /></motion.div>
+            ) : (
+              <motion.div key="out" initial={{ opacity: 0, scale: .97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: .97 }} transition={{ duration: .4, ease: EASE }} className="grid place-items-center py-12 text-center">
+                <div className="grid h-20 w-20 place-items-center rounded-full" style={{ background: 'linear-gradient(135deg,var(--violet),var(--cyan))' }}>
+                  <svg viewBox="0 0 24 24" className="h-9 w-9" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+                </div>
+                {a.user ? (
+                  <>
+                    <h3 className="mt-6 text-2xl font-bold">Un dernier détail</h3>
+                    <p className="muted mt-3 max-w-sm">Choisis un nouveau mot de passe pour accéder à tes messages.</p>
+                    <button onClick={() => a.setModal("password")} className="mt-8 rounded-full bg-white px-6 py-3 font-semibold text-black">Changer le mot de passe</button>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="mt-6 text-2xl font-bold">Connecte-toi pour m'écrire</h3>
+                    <p className="muted mt-3 max-w-sm">Un compte suffit : un nom d'utilisateur et un mot de passe, sans e-mail. Tu retrouves toute la conversation ici.</p>
+                    <div className="mt-8 flex flex-wrap justify-center gap-3">
+                      <motion.button whileHover={{ y: -2 }} whileTap={{ scale: .97 }} onClick={() => a.setModal("login")} className="rounded-full bg-white px-6 py-3 font-semibold text-black">Se connecter</motion.button>
+                      <motion.button whileHover={{ y: -2 }} whileTap={{ scale: .97 }} onClick={() => a.setModal("register")} className="rounded-full border px-6 py-3 font-semibold" style={{ borderColor: 'var(--line)' }}>Créer un compte</motion.button>
+                    </div>
+                  </>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+function APropos() {
+  return <><Manifesto /><Timeline /><Values /><Contact /></>;
+}
+
+/* ───────────── Footer ───────────── */
+function Footer({ go }) {
+  const cols = [
+    { t: "Produit", l: [["Accueil", () => go("accueil")], ["Technologie", () => go("technologie")], ["Configurer", () => go("configurer")], ["Télécharger", DL]] },
+    { t: "Fonctions", l: [["Musique"], ["Notifications"], ["Jeux et overlay"], ["Capture et replay"], ["Assistant IA"], ["Optimiseur"]] },
+    { t: "Aide", l: [["À propos", () => go("apropos")], ["Toutes les versions", "https://github.com/sonlikehisfather/dynamic-island-releases/releases"], ["Discord", "https://discord.com/users/1456994725566353485"], ["GitHub", "https://github.com/sonlikehisfather"]] },
+    { t: "Légal", l: [["Mentions légales", "mentions-legales.html"], ["Confidentialité", "confidentialite.html"], ["Conditions d'utilisation", "conditions.html"], ["Licences tierces", "licences-tierces.html"]] },
+  ];
+  return (
+    <footer className="gutter border-t line mt-10 pb-10 pt-16">
+      <div className="mx-auto max-w-6xl">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,1fr)]">
+          <div>
+            <div className="flex items-center gap-2 font-semibold"><span className="inline-block h-3 w-7 rounded-full" style={{ background: 'linear-gradient(90deg,var(--violet),var(--cyan))' }} />Dynamic Island</div>
+            <p className="muted mt-4 max-w-xs text-sm leading-relaxed">L'île dynamique pour Windows. Musique, notifications, jeux et outils, en haut de ton écran.</p>
+          </div>
+          {cols.map(c => (
+            <div key={c.t}>
+              <h4 className="text-sm font-semibold">{c.t}</h4>
+              <ul className="mt-4 grid gap-2.5 text-sm">
+                {c.l.map(([label, to]) => (
+                  <li key={label}>
+                    {typeof to === "function" ? <button onClick={to} className="muted hover:text-white">{label}</button>
+                      : to ? <a href={to} className="muted hover:text-white">{label}</a>
+                      : <span className="muted">{label}</span>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <div className="mt-14 flex flex-wrap items-center justify-between gap-4 border-t line pt-6 text-xs muted">
+          <span>© 2026 sonlikehisfather. Toutes les marques citées appartiennent à leurs propriétaires.</span>
+          <span>Windows 10 (2004+) et Windows 11</span>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+/* ───────────── App ───────────── */
+function App() {
+  const initial = PAGES.some(p => p.id === location.hash.slice(1)) ? location.hash.slice(1) : "accueil";
+  const [page, setPage] = useState(initial);
+  useEffect(() => {
+    const f = () => { const h = location.hash.slice(1); if (PAGES.some(p => p.id === h)) setPage(h); };
+    window.addEventListener('hashchange', f); return () => window.removeEventListener('hashchange', f);
+  }, []);
+  // go(page, ancre facultative) : l'ancre (ex. « contact ») est atteinte une fois la page affichée
+  const go = (id, anchor) => {
+    const toAnchor = () => { let n = 0; const t = setInterval(() => { const el = document.getElementById(anchor); if (el || ++n > 40) { clearInterval(t); if (el) el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); } }, 50); };
+    if (id === page) { if (anchor) toAnchor(); else window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+    location.hash = id; setPage(id); window.scrollTo({ top: 0 });
+    if (anchor) setTimeout(toAnchor, 600);
+  };
+
+  const view = {
+    accueil: <Accueil go={go} />,
+    technologie: <Technologie />,
+    configurer: <Configurer />,
+    apropos: <APropos />,
+  }[page];
+
+  return (
+    <AuthProvider>
+      <Nav page={page} go={go} />
+      <AnimatePresence mode="wait">
+        <motion.main key={page}
+          initial={reduce ? false : { opacity: 0, y: 24, filter: "blur(10px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          exit={reduce ? {} : { opacity: 0, y: -16, filter: "blur(10px)" }}
+          transition={{ duration: .55, ease: EASE }}>
+          {view}
+        </motion.main>
+      </AnimatePresence>
+      <Footer go={go} />
+    </AuthProvider>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>

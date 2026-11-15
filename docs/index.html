@@ -5,47 +5,52 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Dynamic Island pour Windows</title>
   <meta name="description" content="Une vraie Dynamic Island pour ton PC Windows : musique, stats, overlay, réticule, replay, assistant IA, captures et outils rapides, dans une île animée en haut de ton écran.">
-  <meta name="theme-color" content="#ffffff">
   <meta property="og:title" content="Dynamic Island pour Windows">
   <meta property="og:description" content="Ton PC a enfin son île.">
   <meta property="og:type" content="website">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23161618'/%3E%3Crect x='14' y='14' width='36' height='13' rx='6.5' fill='%23fff'/%3E%3Crect x='16' y='36' width='7' height='14' rx='3.5' fill='%2330d158'/%3E%3Crect x='26' y='30' width='7' height='20' rx='3.5' fill='%230a84ff'/%3E%3Crect x='36' y='34' width='7' height='16' rx='3.5' fill='%23bf5af2'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="assets/apple.css?v=3">
-  <link rel="stylesheet" href="assets/extra.css?v=3">
-  <link rel="stylesheet" href="assets/fx.css?v=1">
+  <meta name="theme-color" content="#07070B">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2307070B'/%3E%3Crect x='10' y='24' width='44' height='16' rx='8' fill='%23000' stroke='%237C5CFF' stroke-width='2.5'/%3E%3Ccircle cx='45' cy='32' r='3.5' fill='%2322D3EE'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="assets/aurora.css?v=2">
+  <script>document.documentElement.classList.add('js')</script>
 </head>
 <body>
-<header class="nav"><div class="in"><a class="logo" href="index.html"><i></i>Dynamic Island</a><ul><li><a href="fonctionnalites.html">Fonctions</a></li><li><a href="jeux.html">Jeux</a></li><li><a href="capture.html">Capture</a></li><li><a href="optimiseur.html">Optimiseur</a></li><li><a href="assistant.html">IA</a></li><li><a href="tarifs.html">Tarifs</a></li></ul><a class="buy" href="tarifs.html">Acheter</a></div></header>
+<header class="nav"><div class="in"><a class="logo" href="index.html"><i></i>Dynamic Island</a><ul id="menu"><li><a href="fonctionnalites.html">Fonctions</a></li><li><a href="jeux.html">Jeux</a></li><li><a href="capture.html">Capture</a></li><li><a href="optimiseur.html">Optimiseur</a></li><li><a href="assistant.html">IA</a></li><li><a href="tarifs.html">Tarifs</a></li></ul><a class="buy" href="tarifs.html">Acheter</a><button class="burger" type="button" aria-label="Menu" aria-controls="menu" aria-expanded="false"><span></span></button></div></header>
 
 <main>
 <section class="hero" id="top">
+  <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
   <div class="wrap">
+    <div class="stage" id="decouvrir" aria-label="Démonstration de l'île">
+      <div class="island" id="island" data-s="2">
+        <div class="st s0"><i class="cam"></i></div>
+        <div class="st s1"><span class="cover sm"></span><span class="ttl">Midnight City</span><span class="eq"><i></i><i></i><i></i><i></i></span></div>
+        <div class="st s2 on">
+          <div class="np"><span class="cover"></span><span class="t">Midnight City<small>M83 · Hurry Up, We're Dreaming</small></span><span class="eq"><i></i><i></i><i></i><i></i><i></i></span></div>
+          <div class="prog"><span>1:24</span><span class="bar"><i></i></span><span>4:03</span></div>
+          <div class="ctl" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zM9.5 12 18 6v12z"/></svg><svg class="pp" viewBox="0 0 24 24"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg><svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 6l8.5 6L6 18z"/></svg></div>
+        </div>
+        <div class="st s3"><span class="app"><svg viewBox="0 0 24 24"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9l-4 3v-3H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></svg></span><span class="t">Nouveau message<small>« On joue ce soir ? »</small></span><span class="now">maintenant</span></div>
+      </div>
+    </div>
     <p class="eyebrow rv">Essai gratuit de 3 jours</p>
     <h1 class="rv d1">Dynamic Island.<br><span class="grad">Enfin sur PC.</span></h1>
     <p class="lead rv d2">Musique, stats, captures, replay, assistant IA. Tout vit dans une île qui s'ouvre quand tu en as besoin et disparaît quand tu joues.</p>
     <div class="cta rv d2"><a class="btn" href="https://github.com/sonlikehisfather/dynamic-island-releases/releases/latest/download/DynamicIsland-win-Setup.exe">Télécharger</a><a class="more" href="#tarifs">Voir les tarifs</a></div>
-
-    <div class="stage rv" id="decouvrir" aria-label="Démonstration de l'île">
-      <div class="island" id="island" data-s="0">
-        <div><span style="margin:auto;color:#636366">●</span></div>
-        <div><span class="cover" style="width:26px;height:26px;border-radius:7px"></span><span>Midnight City</span><span class="eq"><i></i><i></i><i></i></span></div>
-        <div><span class="cover"></span><span class="t">Midnight City<small>M83 · Hurry Up, We're Dreaming</small><span class="bar"><i></i></span></span></div>
-        <div><span class="cover" style="background:#30d158"></span><span class="t">Nouveau message<small>« On joue ce soir ? »</small></span></div>
-      </div>
-    </div>
-    <div class="tabs" id="tabs" role="tablist">
-      <button role="tab" aria-selected="true">Repos</button><button role="tab" aria-selected="false">Compacte</button><button role="tab" aria-selected="false">Musique</button><button role="tab" aria-selected="false">Notification</button>
+    <div class="tabs rv d3" id="tabs" role="tablist" aria-label="États de l'île">
+      <button role="tab" aria-selected="false">Repos</button><button role="tab" aria-selected="false">Compacte</button><button role="tab" aria-selected="true">Musique</button><button role="tab" aria-selected="false">Notification</button>
     </div>
   </div>
 </section>
 
-<section class="alt">
+<section>
   <div class="wrap"><p class="story">Une île qui s'adapte à ce que tu fais. Elle écoute ta musique, surveille ton PC, capture ton écran et se range d'elle-même. Rien à configurer, tout se règle d'un geste.</p></div>
 </section>
 
 <section id="fonctions">
   <div class="wrap">
-    <div class="head"><h2 class="rv">Tout ce qu'il te faut.<br>Au même endroit.</h2><p class="rv d1">Des fonctions pensées pour être belles, rapides et discrètes.</p></div>
+    <div class="head"><h2 class="rv">Tout ce qu'il te faut.<br><span class="grad">Au même endroit.</span></h2><p class="rv d1">Des fonctions pensées pour être belles, rapides et discrètes.</p></div>
     <div class="tiles">
       <div class="tile wide c4"><p class="k">Aperçu en direct</p><h3>Les stats de ton PC, d'un coup d'œil.</h3><p>Processeur, mémoire, réseau. L'île se déploie et se range sans jamais gêner.</p><img src="assets/img/ile-stats.webp" alt="L'île affichant les statistiques du PC" loading="lazy"></div>
       <div class="tile c1"><p class="k">Notifications</p><h3>Rien ne t'échappe.</h3><p>Messages et alertes apparaissent dans l'île, avec un ressort fluide.</p><img src="assets/img/ile-notification.webp" alt="Une notification dans l'île" loading="lazy"></div>
@@ -54,9 +59,9 @@
   </div>
 </section>
 
-<section class="alt" id="apercu">
+<section id="apercu">
   <div class="wrap">
-    <div class="head"><h2 class="rv">Des réglages<br>clairs comme du cristal.</h2><p class="rv d1">Thème, couleurs, animations : tout se règle en quelques clics.</p></div>
+    <div class="head"><h2 class="rv">Des réglages<br><span class="grad">clairs comme du cristal.</span></h2><p class="rv d1">Thème, couleurs, animations : tout se règle en quelques clics.</p></div>
     <div class="tiles">
       <div class="tile c2"><p class="k">Apparence</p><h3>À ton image.</h3><p>Choisis la teinte, la vitesse et la forme de l'île.</p><img src="assets/img/reglages-apparence.webp" alt="Réglages d'apparence" loading="lazy"></div>
       <div class="tile c3"><p class="k">Réticule</p><h3>Visée parfaite.</h3><p>Croix, cercle, T : place-le exactement où tu veux.</p><img src="assets/img/reglages-reticule.webp" alt="Réglages du réticule" loading="lazy"></div>
@@ -67,18 +72,19 @@
 
 <section>
   <div class="wrap facts">
-    <div class="rv"><b>3 jours</b><span>d'essai gratuit</span></div>
-    <div class="rv d1"><b>150 Mo</b><span>d'espace disque</span></div>
-    <div class="rv d1"><b>0 pub</b><span>et aucun abonnement</span></div>
-    <div class="rv d2"><b>Win 10 / 11</b><span>compatible</span></div>
+    <div class="fact"><b><span data-count="3">3</span> jours</b><span>d'essai gratuit</span></div>
+    <div class="fact"><b><span data-count="150">150</span> Mo</b><span>d'espace disque</span></div>
+    <div class="fact"><b>0 pub</b><span>et aucun abonnement</span></div>
+    <div class="fact"><b>Win 10 / 11</b><span>compatible</span></div>
   </div>
 </section>
 
-<section class="dark" id="jeux">
+<section class="band" id="jeux">
+  <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
   <div class="wrap">
-    <div class="head"><h2 class="rv">Conçue pour les joueurs.</h2><p class="rv d1">Un overlay léger par-dessus tes jeux. Rien n'est injecté, comme la Xbox Game Bar.</p></div>
+    <div class="head"><h2 class="rv">Conçue pour <span class="grad">les joueurs.</span></h2><p class="rv d1">Un overlay léger par-dessus tes jeux. Rien n'est injecté, comme la Xbox Game Bar.</p></div>
     <div class="hud rv" aria-label="Overlay de jeu animé"><div>FPS<b class="g" id="hFps">238</b></div><div>CPU<b class="o" id="hCpu">34 %</b></div><div>GPU<b class="v" id="hGpu">71 %</b></div><div>Ping<b class="b2" id="hPing">12 ms</b></div></div>
-    <div class="chips rv"><span>Réticule personnalisé</span><span>Mode streamer</span><span>Instant replay<b class="lock">PRO</b></span><span>Boost automatique<b class="lock">PRO</b></span></div>
+    <div class="chips rv d1"><span>Réticule personnalisé</span><span>Mode streamer</span><span>Instant replay<b class="lock">PRO</b></span><span>Boost automatique<b class="lock">PRO</b></span></div>
   </div>
 </section>
 
@@ -87,16 +93,16 @@
     <div class="head"><h2 class="rv">Essaie-la ici.</h2><p class="rv d1">Calcul, conversion d'unités : l'île répond tout de suite.</p></div>
     <div class="try rv">
       <form id="tryForm"><input id="tryIn" value="12*(3+4)" aria-label="Calcul ou conversion" autocomplete="off"><button class="btn" type="submit">Calculer</button></form>
-      <div class="out" id="tryOut">84</div>
+      <div class="out" id="tryOut" aria-live="polite">84</div>
       <div class="ex" id="tryEx"><button>5 km en mi</button><button>72 f en c</button><button>2 h en min</button><button>3*(4+5)^2</button></div>
     </div>
   </div>
 </section>
 
-<section class="alt" id="tarifs">
+<section id="tarifs">
   <div class="wrap">
-    <div class="head"><h2 class="rv">Choisis ta formule.</h2><p class="rv d1">Essaie gratuitement, puis garde-la pour toujours. Pas d'abonnement.</p></div>
-    <div class="plans rv" id="plans" role="radiogroup" aria-label="Formules"></div>
+    <div class="head"><h2 class="rv">Choisis <span class="grad">ta formule.</span></h2><p class="rv d1">Essaie gratuitement, puis garde-la pour toujours. Pas d'abonnement.</p></div>
+    <div class="plans" id="plans" role="radiogroup" aria-label="Formules"></div>
     <div class="buybar rv"><div><b id="buyName"></b><span class="p" id="buyPrice"></span><small id="buyNote"></small></div><a class="btn" id="buyBtn" href="#">Acheter</a></div>
     <div class="cmp rv"><h3>Essai ou licence complète</h3>
       <div class="row h"><span></span><span>Essai</span><span>Licence</span></div>
@@ -143,9 +149,7 @@
   <div class="foot"><div>© 2026 sonlikehisfather · <a href="https://github.com/sonlikehisfather">GitHub</a> · <a href="https://discord.com/users/1456994725566353485">Discord</a></div><div>Windows 10 (2004+) et Windows 11</div></div>
 </div></footer>
 
-<script src="assets/store.js" defer></script>
-<script src="assets/apple.js?v=3" defer></script>
-<script src="assets/extra.js?v=3" defer></script>
-<script src="assets/fx.js?v=1" defer></script>
+<script src="assets/store.js?v=3" defer></script>
+<script src="assets/aurora.js?v=1" defer></script>
 </body>
 </html>
