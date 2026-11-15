@@ -3,8 +3,8 @@ const STORE = {
   checkoutUrl: "https://github.com/sonlikehisfather",   // ← remplace par ton lien de paiement (Stripe, Lemon Squeezy…)
   currency: "€",
   plans: [
-    { id: "essai", name: "Essai", tag: "3 jours", price: 0, blurb: "Toutes les fonctions, sans carte bancaire.", perks: ["Toutes les fonctions", "Une fois par PC", "Aucun paiement"], cta: "Télécharger l'essai", url: "https://github.com/sonlikehisfather/dynamic-island-releases/releases/latest/download/DynamicIsland-win-Setup.exe" },
-    { id: "perso", name: "Personnelle", tag: "À vie", price: 12, blurb: "Une clé, une fois, pour toujours.", perks: ["Mises à jour incluses", "Optimiseur complet", "Assistant IA et replay"], featured: true },
+    { id: "essai", name: "Essai", tag: "3 jours", price: 0, blurb: "Découvre l'île, sans engagement.", perks: ["Île, overlay, réticule, outils", "Une fois par PC", "Sans carte bancaire"], cta: "Télécharger l'essai", url: "https://github.com/sonlikehisfather/dynamic-island-releases/releases/latest/download/DynamicIsland-win-Setup.exe" },
+    { id: "perso", name: "Personnelle", tag: "À vie", price: 12, blurb: "Une clé, une fois, pour toujours.", perks: ["Assistant IA et instant replay", "Studio de capture, scènes, stream", "Boost auto et mises à jour"], featured: true },
     { id: "pro", name: "Famille", tag: "À vie", price: 24, blurb: "Pour toute la maison.", perks: ["Jusqu'à 3 PC", "Mises à jour incluses", "Support prioritaire"], pcs: 3 }
   ]
 };
