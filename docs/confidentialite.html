@@ -5,19 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Politique de confidentialité · Dynamic Island</title>
   <meta name="robots" content="index,follow">
-  <meta name="theme-color" content="#020203">
-  <link rel="stylesheet" href="assets/style.css?v=20261110c">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="stylesheet" href="assets/apple.css?v=1">
 </head>
 <body>
-<div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
-<div class="grain" aria-hidden="true"></div>
-<header class="isle isle-static">
-  <a class="isle-rest" href="index.html" aria-label="Retour au site"><span class="dot"></span><span class="lbl">&larr; Dynamic Island</span>
-    <span class="mini-eq"><i></i><i></i><i></i><i></i></span></a>
-</header>
+<header class="nav scrolled"><div class="in"><a class="logo" href="index.html"><i></i>Dynamic Island</a><a class="buy" href="index.html#tarifs">Acheter</a></div></header>
 <main class="wrap"><article class="doc">
 <h1>Politique de confidentialité</h1>
-<div class="date">Dernière mise à jour : 10 novembre 2026</div>
+<div class="date">Dernière mise à jour : 11 novembre 2026</div>
 <p>En résumé : Dynamic Island fonctionne surtout sur ton PC. sonlikehisfather ne collecte pas de statistiques d'usage, n'a pas de système de compte et ne vend aucune donnée. Voici précisément ce qui reste sur ton PC et ce qui peut en sortir.</p>
 <h2>Ce qui reste sur ton PC</h2>
 <p>Tout est stocké dans le dossier %AppData%\DynamicIsland de ton compte Windows :</p>
@@ -26,7 +21,7 @@
 <li>tes statistiques d'écoute, ton temps de jeu et ton historique de sessions de jeu ;</li>
 <li>ta licence et, si tu les enregistres, tes clés API (chiffrées avec Windows, uniquement lisibles par ton compte) ;</li>
 <li>les vidéos de l'instant replay et de l'enregistrement d'écran, dans ton dossier Vidéos ;</li>
-<li>un journal d'erreurs (crash.log) qui n'est jamais envoyé automatiquement.</li>
+<li>des journaux d'erreurs (app.log et crash.log) qui ne sont jamais envoyés automatiquement.</li>
 </ul>
 <p>Pour tout effacer, désinstalle l'île puis supprime ce dossier.</p>
 <h2>Ce que l'appli lit sur ton PC</h2>
@@ -37,12 +32,16 @@
 <li>Mises à jour : l'appli interroge GitHub pour savoir si une nouvelle version existe. GitHub voit l'adresse IP, comme pour n'importe quel téléchargement.</li>
 <li>Paroles : le titre et l'artiste du morceau sont envoyés à LRCLIB (lrclib.net) pour trouver les paroles.</li>
 <li>Reconnaissance musicale (si tu l'utilises, avec ta propre clé) : environ 9 secondes du son de ton PC sont envoyées à AudD (audd.io) uniquement quand tu lances la reconnaissance.</li>
-<li>Essai gratuit (si tu le démarres) : le serveur de licences reçoit des empreintes anonymes de ton PC (des codes calculés à partir de numéros matériels, jamais ton nom, tes fichiers ni les numéros eux-mêmes) et ton adresse IP, uniquement pour retenir la date de début de l'essai et empêcher de le relancer en réinstallant l'application. Ces empreintes sont conservées tant que l'essai existe ; l'adresse IP n'est gardée que sous forme d'empreinte, 24 heures.</li>
+<li>Essai gratuit (si tu le démarres) : le serveur de licences reçoit des empreintes anonymes de ton PC (des codes calculés à partir de numéros matériels, jamais ton nom, tes fichiers ni les numéros eux-mêmes) et ton adresse IP, uniquement pour retenir la date de début de l'essai et empêcher de le relancer en réinstallant l'application. Ces empreintes sont conservées un an au plus, puis effacées automatiquement ; l'adresse IP n'est gardée que sous forme d'empreinte, 24 heures.</li>
 <li>Assistant IA (si tu l'actives, avec ta propre clé) : tes messages, ainsi que le contexte ajouté automatiquement à chaque message (média en cours, état du PC, volume, heure), sont envoyés au service que tu as choisi (Anthropic, OpenAI, Google, Mistral, Groq, OpenRouter, DeepSeek ou un service compatible). Leurs règles de confidentialité s'appliquent alors.</li>
 <li>Test de connexion (ping) : l'appli contacte l'adresse choisie dans les réglages (1.1.1.1 par défaut) pour mesurer la latence.</li>
 <li>Stats : un ping (ICMP) est envoyé toutes les quelques secondes à l'adresse choisie dans les réglages (par défaut 1.1.1.1, Cloudflare) pour afficher la latence ; il ne contient aucune donnée.</li>
 <li>Raccourcis vers des sites : l'icône du site est demandée à Google (google.com/s2/favicons), qui voit donc le nom de domaine.</li>
 <li>Capture d'écran : au premier usage, ffmpeg est téléchargé depuis GitHub.</li>
+<li>Cartes bourse et crypto, convertisseur de devises (si tu les utilises) : les noms de cryptomonnaies et les symboles boursiers que tu as choisis sont envoyés à CoinGecko (coingecko.com) et à Stooq (stooq.com), et les taux de change sont demandés à open.er-api.com (puis à frankfurter.app en secours). Ces services voient ton adresse IP.</li>
+<li>Météo (si tu l'actives) : le nom de ta ville, puis ses coordonnées, sont envoyés à Open-Meteo (open-meteo.com).</li>
+<li>Agenda (si tu l'actives) : l'île télécharge ton calendrier à l'adresse iCal que tu as collée (Google, Microsoft…), qui voit donc ton adresse IP.</li>
+<li>Maison connectée (si tu l'actives) : l'île contacte uniquement le serveur Home Assistant dont tu as donné l'adresse.</li>
 </ul>
 <p>Rien d'autre n'est envoyé. Il n'y a ni publicité, ni traceur, ni outil d'analyse.</p>
 <h2>Base légale et durée de conservation</h2>
